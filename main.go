@@ -3,13 +3,20 @@ package main
 import (
 	"fmt"
 	"github.com/divan/gotrace/trace"
+	"os"
 	"strings"
 	"time"
 )
 
 func main() {
-	src := NewTraceSource("trace.out", "trace.bin")
-	events, err := src.ReadEvents()
+	var src EventSource
+	if len(os.Args) > 1 {
+		src = NewNativeRun(os.Args[1])
+	} else {
+		src = NewTraceSource("trace.out", "trace.bin")
+	}
+
+	events, err := src.Events()
 	if err != nil {
 		panic(err)
 	}
