@@ -3,28 +3,16 @@ package main
 import (
 	"fmt"
 	"github.com/divan/gotrace/trace"
-	"os"
 	"strings"
 	"time"
 )
 
 func main() {
-	f, err := os.Open("trace.out")
+	src := NewTraceSource("trace.out", "trace.bin")
+	events, err := src.ReadEvents()
 	if err != nil {
 		panic(err)
 	}
-	defer f.Close()
-
-	events, err := trace.Parse(f)
-	if err != nil {
-		panic(err)
-	}
-
-	err = trace.Symbolize(events, "trace.bin")
-	if err != nil {
-		panic(err)
-	}
-
 	c := &cmdWriter{}
 
 	fmt.Printf("Got %d events\n", len(events))
