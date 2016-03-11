@@ -8,6 +8,9 @@ import (
 
 type cmdWriter struct{}
 
+// Command is a common structure for all
+// types of supported events (aka 'commands').
+// It's main purpose to handle JSON marshalling.
 type Command struct {
 	Time     int64       "json:\"t\""
 	Command  string      "json:\"command\""

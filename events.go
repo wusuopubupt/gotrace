@@ -64,6 +64,7 @@ type NativeRun struct {
 	Path string
 }
 
+// NewNativeRun inits new NativeRun source.
 func NewNativeRun(path string) *NativeRun {
 	return &NativeRun{
 		Path: path,
@@ -105,5 +106,3 @@ func (r *NativeRun) Events() ([]*trace.Event, error) {
 	// parse trace
 	return parseTrace(&stderr, tmpBinary.Name())
 }
-
-type DockerRun struct{}
