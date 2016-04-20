@@ -3,21 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 )
 
-// cmdWriter writes serialized commands
-// into the given writer.
-type cmdWriter struct {
-	w io.Writer
-}
-
-// NewCmdWriter inits new cmdWriter.
-func NewCmdWriter(w io.Writer) *cmdWriter {
-	return &cmdWriter{
-		w: w,
-	}
-}
+type Commands []*Command
 
 // Command is a common structure for all
 // types of supported events (aka 'commands').
@@ -35,35 +23,35 @@ type Command struct {
 	Duration int64       "json:\"duration,omitempty\""
 }
 
-func (c *cmdWriter) write(cmd *Command) {
-	data, err := json.Marshal(cmd)
+func (c *Commands) toJSON() []byte {
+	data, err := json.Marshal(c)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Fprintln(c.w, string(data))
+	return data
 }
 
-func (c *cmdWriter) StartGoroutine(ts int64, name string, gid, pid uint64) {
+func (c *Commands) StartGoroutine(ts int64, name string, gid, pid uint64) {
 	cmd := &Command{
 		Time:    ts,
 		Command: "create goroutine",
 		Name:    fmt.Sprintf("#%d", gid),
 		Parent:  fmt.Sprintf("#%d", pid),
 	}
-	c.write(cmd)
+	*c = append(*c, cmd)
 }
 
-func (c *cmdWriter) StopGoroutine(ts int64, name string, gid uint64) {
+func (c *Commands) StopGoroutine(ts int64, name string, gid uint64) {
 	cmd := &Command{
 		Time:    ts,
 		Command: "stop goroutine",
 		Name:    fmt.Sprintf("#%d", gid),
 	}
-	c.write(cmd)
+	*c = append(*c, cmd)
 }
 
-func (c *cmdWriter) ChanSend(ts int64, cid, gid, did uint64) {
+func (c *Commands) ChanSend(ts int64, cid, gid, did uint64) {
 	cmd := &Command{
 		Time:    ts,
 		Command: "start send",
@@ -71,10 +59,10 @@ func (c *cmdWriter) ChanSend(ts int64, cid, gid, did uint64) {
 		Channel: fmt.Sprintf("#%d", cid),
 		Value:   fmt.Sprintf("%d%d", cid, did),
 	}
-	c.write(cmd)
+	*c = append(*c, cmd)
 }
 
-func (c *cmdWriter) ChanRecv(ts int64, cid, gid, did uint64) {
+func (c *Commands) ChanRecv(ts int64, cid, gid, did uint64) {
 	cmd := &Command{
 		Time:    ts,
 		Command: "start recv",
@@ -82,5 +70,5 @@ func (c *cmdWriter) ChanRecv(ts int64, cid, gid, did uint64) {
 		Channel: fmt.Sprintf("#%d", cid),
 		Value:   fmt.Sprintf("%d%d", cid, did),
 	}
-	c.write(cmd)
+	*c = append(*c, cmd)
 }

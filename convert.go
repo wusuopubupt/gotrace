@@ -1,15 +1,13 @@
 package main
 
 import (
-	"bytes"
 	"strings"
 
 	"github.com/divan/gotrace/trace"
 )
 
 func ConvertEvents(events []*trace.Event) ([]byte, error) {
-	var buf bytes.Buffer
-	c := NewCmdWriter(&buf)
+	var c Commands
 
 	var lastG uint64
 	for _, ev := range events {
@@ -43,5 +41,5 @@ func ConvertEvents(events []*trace.Event) ([]byte, error) {
 		}
 	}
 
-	return buf.Bytes(), nil
+	return c.toJSON(), nil
 }

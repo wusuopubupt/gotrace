@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 )
 
@@ -24,5 +23,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Print(string(json))
+
+	StartServer(":2000", json)
 }
