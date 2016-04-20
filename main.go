@@ -10,8 +10,10 @@ import (
 
 func main() {
 	var src EventSource
-	if len(os.Args) > 1 {
+	if len(os.Args) == 2 {
 		src = NewNativeRun(os.Args[1])
+	} else if len(os.Args) == 3 {
+		src = NewTraceSource(os.Args[1], os.Args[2])
 	} else {
 		src = NewTraceSource("trace.out", "trace.bin")
 	}
