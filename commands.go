@@ -3,10 +3,21 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"os"
+	"io"
 )
 
-type cmdWriter struct{}
+// cmdWriter writes serialized commands
+// into the given writer.
+type cmdWriter struct {
+	w io.Writer
+}
+
+// NewCmdWriter inits new cmdWriter.
+func NewCmdWriter(w io.Writer) *cmdWriter {
+	return &cmdWriter{
+		w: w,
+	}
+}
 
 // Command is a common structure for all
 // types of supported events (aka 'commands').
@@ -24,13 +35,13 @@ type Command struct {
 	Duration int64       "json:\"duration,omitempty\""
 }
 
-func (*cmdWriter) write(cmd *Command) {
+func (c *cmdWriter) write(cmd *Command) {
 	data, err := json.Marshal(cmd)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Fprintln(os.Stderr, string(data))
+	fmt.Fprintln(c.w, string(data))
 }
 
 func (c *cmdWriter) StartGoroutine(ts int64, name string, gid, pid uint64) {
