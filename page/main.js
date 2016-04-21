@@ -30,10 +30,10 @@ function init() {
 		allCaps: false,
 		zoom: 0.6,
 		speed: 1.5,
-		angle: 0,
-		angle2: 360/24,
+		angle: 45,
+		angle2: 90,
 		autoAngle: false,
-		totalTime: 50,
+		totalTime: 100,
 		distance: 100,
 		autoGrow: false,
 		distance2: 20
@@ -62,7 +62,6 @@ function init() {
 }
 
 function animate() {
-
 	controls.update();
 	trace.animate();
 
