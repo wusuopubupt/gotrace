@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
+	"fmt"
 	"github.com/divan/gotrace/trace"
 	"io"
 	"io/ioutil"
@@ -105,4 +107,34 @@ func (r *NativeRun) Events() ([]*trace.Event, error) {
 
 	// parse trace
 	return parseTrace(&stderr, tmpBinary.Name())
+}
+
+// RawSource implements EventSource for
+// raw events in JSON file.
+type RawSource struct {
+	// Path is the path to the JSON file.
+	Path string
+}
+
+// NewRawSource inits new RawSource.
+func NewRawSource(path string) *RawSource {
+	return &RawSource{
+		Path: path,
+	}
+}
+
+// Events reads JSON file from filesystem and returns events.
+func (t *RawSource) Events() ([]*trace.Event, error) {
+	f, err := os.Open(t.Path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	var events []*trace.Event
+	err = json.NewDecoder(f).Decode(&events)
+	for _, ev := range events {
+		fmt.Println("Event", ev)
+	}
+	return events, err
 }
