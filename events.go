@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/divan/gotrace/trace"
 	"io"
@@ -63,13 +64,13 @@ func parseTrace(r io.Reader, binary string) ([]*trace.Event, error) {
 // NativeRun implements EventSource for running app locally,
 // using native Go installation.
 type NativeRun struct {
-	Path string
+	OrigPath, Path string
 }
 
 // NewNativeRun inits new NativeRun source.
 func NewNativeRun(path string) *NativeRun {
 	return &NativeRun{
-		Path: path,
+		OrigPath: path,
 	}
 }
 
@@ -78,6 +79,15 @@ func NewNativeRun(path string) *NativeRun {
 // installation and returns parsed events.
 func (r *NativeRun) Events() ([]*trace.Event, error) {
 	// rewrite AST
+	err := r.RewriteSource()
+	if err != nil {
+		return nil, fmt.Errorf("couldn't rewrite source code: %v", err)
+	}
+	defer func(tmpDir string) {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			fmt.Println("Cannot remove temp dir:", err)
+		}
+	}(r.Path)
 
 	tmpBinary, err := ioutil.TempFile("", "gotracer_build")
 	if err != nil {
@@ -88,7 +98,9 @@ func (r *NativeRun) Events() ([]*trace.Event, error) {
 	// build binary
 	// TODO: replace build&run part with "go run" when there is no more need
 	// to keep binary
-	err = exec.Command("go", "build", "-o", tmpBinary.Name(), r.Path).Run()
+	cmd := exec.Command("go", "build", "-o", tmpBinary.Name())
+	cmd.Dir = r.Path
+	err = cmd.Run()
 	if err != nil {
 		// TODO: test on most common errors, possibly add stderr to
 		// error information or smth.
@@ -97,7 +109,7 @@ func (r *NativeRun) Events() ([]*trace.Event, error) {
 
 	// run
 	var stderr bytes.Buffer
-	cmd := exec.Command(tmpBinary.Name())
+	cmd = exec.Command(tmpBinary.Name())
 	cmd.Stderr = &stderr
 	if err = cmd.Run(); err != nil {
 		// TODO: test on most common errors, possibly add stderr to
@@ -105,8 +117,25 @@ func (r *NativeRun) Events() ([]*trace.Event, error) {
 		return nil, err
 	}
 
+	if stderr.Len() == 0 {
+		return nil, errors.New("empty trace")
+	}
+
 	// parse trace
 	return parseTrace(&stderr, tmpBinary.Name())
+}
+
+// RewriteSource attempts to add trace-related code if needed.
+// TODO: add support for multiple files and package selectors
+func (r *NativeRun) RewriteSource() error {
+	path, err := rewriteSource(r.OrigPath)
+	if err != nil {
+		return err
+	}
+
+	r.Path = path
+
+	return nil
 }
 
 // RawSource implements EventSource for
