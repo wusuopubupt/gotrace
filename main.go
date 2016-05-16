@@ -4,11 +4,13 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
 )
 
 func main() {
 	dump := flag.String("o", "", "Output trace in JSON format to this file")
+	flag.Usage = Usage
 	flag.Parse()
 	args := flag.Args()
 
@@ -26,6 +28,9 @@ func main() {
 		src = NewNativeRun(args[0])
 	} else if len(args) == 2 {
 		src = NewTraceSource(args[0], args[1])
+	} else {
+		Usage()
+		os.Exit(1)
 	}
 
 	events, err := src.Events()
@@ -53,4 +58,10 @@ func ProcessCommands(out string, commands []byte) {
 	}
 
 	StartServer(":2000", commands)
+}
+
+// Usage prints usage information, overriding default one.
+func Usage() {
+	fmt.Fprintf(os.Stderr, "Usage: %s [-o file] [trace.out trace.bin] or [trace.json] or [main.go]\n", os.Args[0])
+	flag.PrintDefaults()
 }
