@@ -1,20 +1,29 @@
 package main
 
 import (
+	"bytes"
+	"errors"
+	"go/ast"
+	"go/printer"
+	"golang.org/x/tools/go/ast/astutil"
 	"io/ioutil"
 	"path/filepath"
+
+	"golang.org/x/tools/go/loader"
 )
+
+var ErrImported = errors.New("trace already imported")
 
 // rewriteSource rewrites current source and saves
 // into temporary file, returning it's path.
 func rewriteSource(path string) (string, error) {
-	orig, err := ioutil.ReadFile(path)
-	if err != nil {
-		return "", err
-	}
-
-	data, err := addCode(orig)
-	if err != nil {
+	data, err := addCode(path)
+	if err == ErrImported {
+		data, err = ioutil.ReadFile(path)
+		if err != nil {
+			return "", err
+		}
+	} else if err != nil {
 		return "", err
 	}
 
@@ -31,6 +40,81 @@ func rewriteSource(path string) (string, error) {
 	return tmpDir, nil
 }
 
-func addCode(data []byte) ([]byte, error) {
-	return data, nil
+// addCode searches for main func in data, and updates AST code
+// adding tracing functions.
+func addCode(path string) ([]byte, error) {
+	var conf loader.Config
+	if _, err := conf.FromArgs([]string{path}, false); err != nil {
+		return nil, err
+	}
+
+	prog, err := conf.Load()
+	if err != nil {
+		return nil, err
+	}
+
+	// check if runtime/trace already imported
+	for i, _ := range prog.Imported {
+		if i == "runtime/trace" {
+			return nil, ErrImported
+		}
+	}
+
+	pkg := prog.Created[0]
+
+	// TODO: find file with main func inside
+	astFile := pkg.Files[0]
+
+	// add imports
+	astutil.AddImport(prog.Fset, astFile, "os")
+	astutil.AddImport(prog.Fset, astFile, "runtime/trace")
+
+	// add start/stop code
+	ast.Inspect(astFile, func(n ast.Node) bool {
+		switch x := n.(type) {
+		case *ast.FuncDecl:
+			// find 'main' function
+			if x.Name.Name == "main" && x.Recv == nil {
+				stmts := createTraceStmts()
+				stmts = append(stmts, x.Body.List...)
+				x.Body.List = stmts
+			}
+		}
+		return true
+	})
+
+	var buf bytes.Buffer
+	err = printer.Fprint(&buf, prog.Fset, astFile)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+func createTraceStmts() []ast.Stmt {
+	ret := make([]ast.Stmt, 2)
+	ret[0] = &ast.ExprStmt{
+		X: &ast.CallExpr{
+			Fun: &ast.SelectorExpr{
+				X:   &ast.Ident{Name: "trace"},
+				Sel: &ast.Ident{Name: "Start"},
+			},
+			Args: []ast.Expr{
+				&ast.SelectorExpr{
+					X:   &ast.Ident{Name: "os"},
+					Sel: &ast.Ident{Name: "Stderr"},
+				},
+			},
+		},
+	}
+	ret[1] = &ast.DeferStmt{
+		Call: &ast.CallExpr{
+			Fun: &ast.SelectorExpr{
+				X:   &ast.Ident{Name: "trace"},
+				Sel: &ast.Ident{Name: "Stop"},
+			},
+		},
+	}
+	return ret
 }

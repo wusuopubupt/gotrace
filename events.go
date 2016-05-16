@@ -99,16 +99,19 @@ func (r *NativeRun) Events() ([]*trace.Event, error) {
 	// TODO: replace build&run part with "go run" when there is no more need
 	// to keep binary
 	cmd := exec.Command("go", "build", "-o", tmpBinary.Name())
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
 	cmd.Dir = r.Path
 	err = cmd.Run()
 	if err != nil {
+		fmt.Println("go build error", stderr.String())
 		// TODO: test on most common errors, possibly add stderr to
 		// error information or smth.
 		return nil, err
 	}
 
 	// run
-	var stderr bytes.Buffer
+	stderr.Reset()
 	cmd = exec.Command(tmpBinary.Name())
 	cmd.Stderr = &stderr
 	if err = cmd.Run(); err != nil {
