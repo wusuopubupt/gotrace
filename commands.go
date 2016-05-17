@@ -24,7 +24,7 @@ type Command struct {
 }
 
 func (c *Commands) toJSON() []byte {
-	data, err := json.Marshal(c)
+	data, err := json.MarshalIndent(c, "", "  ")
 	if err != nil {
 		panic(err)
 	}

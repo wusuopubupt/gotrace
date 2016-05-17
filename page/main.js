@@ -27,7 +27,7 @@ function init() {
 	mat1 = new THREE.LineBasicMaterial( { color: 0x0000ff, linewidth: 4, } );
 	trace = new GoThree.Trace();
 	trace.init(scene, data, {
-		allCaps: false,
+		allCaps: true,
 		zoom: 0.6,
 		speed: 1.5,
 		angle: 45,

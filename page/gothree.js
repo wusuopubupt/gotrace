@@ -275,8 +275,8 @@ GoThree.Trace = function() {
 
 	// _goroutine_name formats goroutine name.
 	this._goroutine_name = function(name) {
-		if (name == "main") {
-			return name;
+		if (name == "#1") {
+			return "main";
 		}
 
 		// is asked, draw caps text for all goroutines
