@@ -26,9 +26,9 @@ func ConvertEvents(events []*trace.Event) ([]byte, error) {
 			c.StopGoroutine(ev.Ts, "", ev.G)
 			lastG = 0
 		case trace.EvGoSend:
-			c.ChanSend(ev.Ts, ev.Args[1], ev.G, ev.Args[0])
+			c.ChanSend(ev.Ts, ev.Args[1], ev.G, ev.Args[0], ev.Args[2])
 		case trace.EvGoRecv:
-			c.ChanRecv(ev.Ts, ev.Args[1], ev.G, ev.Args[0])
+			c.ChanRecv(ev.Ts, ev.Args[1], ev.G, ev.Args[0], ev.Args[2])
 		case trace.EvGoBlockSelect:
 			lastG = 0
 		case trace.EvGoStop, trace.EvGoSched, trace.EvGoPreempt,

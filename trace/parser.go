@@ -785,6 +785,6 @@ var EventDescriptions = [EvCount]struct {
 	EvNextGC:         {"NextGC", false, []string{"mem"}},
 	EvTimerGoroutine: {"TimerGoroutine", false, []string{"g", "unused"}},
 	EvFutileWakeup:   {"FutileWakeup", false, []string{}},
-	EvGoSend:         {"GoSend", false, []string{"ts", "cid"}},
-	EvGoRecv:         {"GoRecv", false, []string{"ts", "cid"}},
+	EvGoSend:         {"GoSend", false, []string{"eid", "cid", "val"}},
+	EvGoRecv:         {"GoRecv", false, []string{"eid", "cid", "val"}},
 }

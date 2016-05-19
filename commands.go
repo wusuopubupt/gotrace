@@ -20,6 +20,7 @@ type Command struct {
 	To       string      "json:\"to,omitempty\""
 	Channel  string      "json:\"ch,omitempty\""
 	Value    interface{} "json:\"value,omitempty\""
+	EventID  string      "json:\"eid,omitempty\""
 	Duration int64       "json:\"duration,omitempty\""
 }
 
@@ -51,24 +52,26 @@ func (c *Commands) StopGoroutine(ts int64, name string, gid uint64) {
 	*c = append(*c, cmd)
 }
 
-func (c *Commands) ChanSend(ts int64, cid, gid, did uint64) {
+func (c *Commands) ChanSend(ts int64, cid, gid, eid, val uint64) {
 	cmd := &Command{
 		Time:    ts,
 		Command: "start send",
 		From:    fmt.Sprintf("#%d", gid),
 		Channel: fmt.Sprintf("#%d", cid),
-		Value:   fmt.Sprintf("%d%d", cid, did),
+		Value:   fmt.Sprintf("%d", val),
+		EventID: fmt.Sprintf("%d", eid),
 	}
 	*c = append(*c, cmd)
 }
 
-func (c *Commands) ChanRecv(ts int64, cid, gid, did uint64) {
+func (c *Commands) ChanRecv(ts int64, cid, gid, eid, val uint64) {
 	cmd := &Command{
 		Time:    ts,
 		Command: "start recv",
 		To:      fmt.Sprintf("#%d", gid),
 		Channel: fmt.Sprintf("#%d", cid),
-		Value:   fmt.Sprintf("%d%d", cid, did),
+		Value:   fmt.Sprintf("%d", val),
+		EventID: fmt.Sprintf("%d", eid),
 	}
 	*c = append(*c, cmd)
 }
