@@ -9,7 +9,7 @@ import (
 	"github.com/divan/gotrace/trace"
 )
 
-func ConvertEvents(events []*trace.Event) ([]byte, error) {
+func ConvertEvents(events []*trace.Event) (Commands, error) {
 	var c Commands
 
 	sends := list.New()
@@ -60,7 +60,7 @@ func ConvertEvents(events []*trace.Event) ([]byte, error) {
 	lastTs := c[len(c)-1].Time
 	c.StopGoroutine(lastTs+1000, "", 1)
 
-	return c.toJSON(), nil
+	return c, nil
 }
 
 // findSource tries to find corresponding Send event to ev.

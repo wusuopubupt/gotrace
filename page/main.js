@@ -26,6 +26,8 @@ function init() {
 	
 	mat1 = new THREE.LineBasicMaterial( { color: 0x0000ff, linewidth: 4, } );
 	trace = new GoThree.Trace();
+	trace.init(scene, data, params);
+	/*
 	trace.init(scene, data, {
 		allCaps: true,
 		zoom: 0.6,
@@ -38,6 +40,7 @@ function init() {
 		autoGrow: false,
 		distance2: 20
 	});
+	*/
 
 	// RENDERER
 	renderer = new THREE.WebGLRenderer({ alpha: true });

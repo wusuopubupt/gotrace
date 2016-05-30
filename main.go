@@ -21,7 +21,8 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
-			ProcessCommands(*dump, commands)
+			_ = commands
+			//ProcessCommands(*dump, commands)
 			return
 		}
 
@@ -47,9 +48,12 @@ func main() {
 }
 
 // ProcessCommands processes command list.
-func ProcessCommands(out string, commands []byte) {
+func ProcessCommands(out string, commands Commands) {
+	params := GuessParams(commands)
+
+	data := commands.toJSON()
 	if out != "" {
-		err := ioutil.WriteFile(out, commands, 0644)
+		err := ioutil.WriteFile(out, data, 0644)
 		if err != nil {
 			panic(err)
 		}
@@ -57,7 +61,7 @@ func ProcessCommands(out string, commands []byte) {
 		return
 	}
 
-	StartServer(":2000", commands)
+	StartServer(":2000", data, params)
 }
 
 // Usage prints usage information, overriding default one.

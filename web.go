@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -22,10 +23,21 @@ func init() {
 
 // StartServer generates webpage, serves it via http
 // and tries to open it using default browser.
-func StartServer(bind string, data []byte) error {
+func StartServer(bind string, data []byte, params *Params) error {
 	// Serve data as data.js
 	http.HandleFunc("/data.js", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("var data = "))
+		w.Write(data)
+	}))
+
+	// Serve params as params.js
+	http.HandleFunc("/params.js", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("var params = "))
+		data, err := json.MarshalIndent(params, "", "  ")
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 		w.Write(data)
 	}))
 
