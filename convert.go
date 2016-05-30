@@ -55,6 +55,11 @@ func ConvertEvents(events []*trace.Event) ([]byte, error) {
 	// sort events
 	sort.Sort(ByTimestamp(c))
 
+	// insert stop main
+	// TODO: figure out why it's not in the trace
+	lastTs := c[len(c)-1].Time
+	c.StopGoroutine(lastTs+1000, "", 1)
+
 	return c.toJSON(), nil
 }
 
