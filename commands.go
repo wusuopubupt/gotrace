@@ -34,11 +34,16 @@ func (c *Commands) toJSON() []byte {
 }
 
 func (c *Commands) StartGoroutine(ts int64, name string, gid, pid uint64) {
+	parent := fmt.Sprintf("#%d", pid)
+	// ignore parent for 'main()' which has pid 0
+	if pid == 0 {
+		parent = ""
+	}
 	cmd := &Command{
 		Time:    ts,
 		Command: "create goroutine",
 		Name:    fmt.Sprintf("#%d", gid),
-		Parent:  fmt.Sprintf("#%d", pid),
+		Parent:  parent,
 	}
 	*c = append(*c, cmd)
 }
