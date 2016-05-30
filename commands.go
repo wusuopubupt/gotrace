@@ -57,26 +57,21 @@ func (c *Commands) StopGoroutine(ts int64, name string, gid uint64) {
 	*c = append(*c, cmd)
 }
 
-func (c *Commands) ChanSend(ts int64, cid, gid, eid, val uint64) {
+func (c *Commands) ChanSend(ts int64, cid, fgid, tgid, val uint64) {
 	cmd := &Command{
 		Time:    ts,
-		Command: "start send",
-		From:    fmt.Sprintf("#%d", gid),
+		Command: "send to channel",
+		From:    fmt.Sprintf("#%d", fgid),
+		To:      fmt.Sprintf("#%d", tgid),
 		Channel: fmt.Sprintf("#%d", cid),
 		Value:   fmt.Sprintf("%d", val),
-		EventID: fmt.Sprintf("%d", eid),
 	}
 	*c = append(*c, cmd)
 }
 
-func (c *Commands) ChanRecv(ts int64, cid, gid, eid, val uint64) {
-	cmd := &Command{
-		Time:    ts,
-		Command: "start recv",
-		To:      fmt.Sprintf("#%d", gid),
-		Channel: fmt.Sprintf("#%d", cid),
-		Value:   fmt.Sprintf("%d", val),
-		EventID: fmt.Sprintf("%d", eid),
-	}
-	*c = append(*c, cmd)
-}
+//ByTimestamp implements sort.Interface for sorting command by timestamp.
+type ByTimestamp Commands
+
+func (a ByTimestamp) Len() int           { return len(a) }
+func (a ByTimestamp) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByTimestamp) Less(i, j int) bool { return a[i].Time < a[j].Time }
