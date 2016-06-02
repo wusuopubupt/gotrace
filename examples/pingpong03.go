@@ -7,6 +7,9 @@ func main() {
 	table := make(chan int)
 
 	for i := 0; i < 100; i++ {
+		// this sleep is added to more or less preserve an order
+		// of the goroutines id on creation
+		time.Sleep(10 * time.Millisecond)
 		go player(table)
 	}
 
