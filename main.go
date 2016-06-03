@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	dump := flag.String("o", "", "Output trace in JSON format to this file")
+	output := flag.String("o", "", "Output trace in JSON format to this file")
 	flag.Usage = Usage
 	flag.Parse()
 	args := flag.Args()
@@ -22,7 +22,7 @@ func main() {
 				panic(err)
 			}
 			_ = commands
-			//ProcessCommands(*dump, commands)
+			//ProcessCommands(*output, commands)
 			return
 		}
 
@@ -44,7 +44,7 @@ func main() {
 		panic(err)
 	}
 
-	ProcessCommands(*dump, commands)
+	ProcessCommands(*output, commands)
 }
 
 // ProcessCommands processes command list.

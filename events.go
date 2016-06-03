@@ -115,6 +115,7 @@ func (r *NativeRun) Events() ([]*trace.Event, error) {
 	cmd = exec.Command(tmpBinary.Name())
 	cmd.Stderr = &stderr
 	if err = cmd.Run(); err != nil {
+		fmt.Println("modified program failed:", err, stderr.String())
 		// TODO: test on most common errors, possibly add stderr to
 		// error information or smth.
 		return nil, err
