@@ -8,7 +8,7 @@ type Params struct {
 
 func GuessParams(c Commands) *Params {
 	return &Params{
-		Angle: 3,
+		Angle: 120,
 		Caps:  true,
 	}
 }
