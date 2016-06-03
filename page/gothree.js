@@ -106,7 +106,7 @@ GoThree.Trace = function() {
 		
 		// Process next command
 		var cmd = _data[_step];
-		if (cmd == undefined) return;
+		if (cmd === undefined) return;
 		// if current command is ready to be rendered...
 		while (_t/_tick_per_sec > cmd.t) {
 			// process command
@@ -130,6 +130,7 @@ GoThree.Trace = function() {
 			}
 			_step++
 			cmd = _data[_step];
+			if (cmd === undefined) break;
 		}
 
 		// increase time
