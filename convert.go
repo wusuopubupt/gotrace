@@ -14,6 +14,7 @@ func ConvertEvents(events []*trace.Event) (Commands, error) {
 
 	sends := list.New()
 
+	debug := false
 	var lastG uint64
 	for _, ev := range events {
 		switch ev.Type {
@@ -25,31 +26,58 @@ func ConvertEvents(events []*trace.Event) (Commands, error) {
 						break
 					}
 				}
+				if debug {
+					fmt.Println(" ---> Create:", ev.G, "from", lastG)
+				}
 				c.StartGoroutine(ev.Ts, ev.Stk[0].Fn, ev.G, lastG)
 			}
 		case trace.EvGoCreate:
 			lastG = ev.G
 		case trace.EvGoEnd:
 			c.StopGoroutine(ev.Ts, "", ev.G)
-			lastG = 1
+			lastG = ev.G
+			if debug {
+				fmt.Println("End:", ev.G)
+			}
 		case trace.EvGoSend:
 			sends.PushBack(ev)
+			if debug {
+				fmt.Printf("[DD] %d, Send: G:%d, CH: %d, EvID: %d, Val:%d\n", ev.Ts, ev.G, ev.Args[1], ev.Args[0], ev.Args[2])
+			}
 		case trace.EvGoRecv:
+			if debug {
+				fmt.Printf("[DD] %d, Recv: G:%d, CH: %d, EvID: %d, Val:%d - %v\n", ev.Ts, ev.G, ev.Args[1], ev.Args[0], ev.Args[2], ev)
+			}
 			send := findSource(sends, ev)
 			if send == nil {
-				fmt.Println("[WARN] Recv w/o Send:", ev)
+				if debug {
+					//fmt.Println("[DD] Close channel (probably):", ev.G, ev.Args[1])
+				}
 				continue
+			}
+			if debug {
+				fmt.Printf("[DD] %d, Recv->Send: FromG:%d, ToG: %d, CH: %d, EvID: %d, Val:%d\n", send.Ts, send.G, ev.G, ev.Args[1], ev.Args[0], ev.Args[2])
 			}
 			c.ChanSend(send.Ts, ev.Args[1], send.G, ev.G, send.Args[2])
 		case trace.EvGCStart, trace.EvGCDone, trace.EvGCScanStart, trace.EvGCScanDone:
 			lastG = 1
-		case trace.EvGoSched, trace.EvGoPreempt,
-			trace.EvGoSleep, trace.EvGoBlock, trace.EvGoBlockSelect, trace.EvGoBlockSend, trace.EvGoBlockRecv,
-			trace.EvGoBlockSync, trace.EvGoBlockCond, trace.EvGoBlockNet,
-			trace.EvGoSysBlock:
-			lastG = 1
+			/*
+				case trace.EvGoSched, trace.EvGoPreempt,
+					trace.EvGoSleep, trace.EvGoBlock, trace.EvGoBlockSelect, trace.EvGoBlockSend, trace.EvGoBlockRecv,
+					trace.EvGoBlockSync, trace.EvGoBlockCond, trace.EvGoBlockNet,
+					trace.EvGoSysBlock:
+					fmt.Println("Ev:", ev.Type, ev.G, ev.Args)
+					//lastG = ev.G
+			*/
 		case trace.EvGoStop:
+			if debug {
+				fmt.Println("Stop:", ev.G)
+			}
 			lastG = 1
+		default:
+			if debug {
+				fmt.Println("Ev:", ev.Type, ev.G, ev.Args)
+			}
 		}
 	}
 
