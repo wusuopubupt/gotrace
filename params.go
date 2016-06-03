@@ -11,9 +11,9 @@ type Params struct {
 
 func GuessParams(c Commands) *Params {
 	return &Params{
-		Angle:          360 / 5,
+		Angle:          -15,
 		AngleSecond:    360 / 3,
-		Caps:           false,
+		Caps:           true,
 		Distance:       80,
 		DistanceSecond: 20,
 	}
