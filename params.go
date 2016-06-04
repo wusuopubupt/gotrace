@@ -7,14 +7,16 @@ type Params struct {
 	Caps           bool `json:"allCaps"`
 	Distance       int  `json:"distance"`
 	DistanceSecond int  `json:"distance2"`
+	AutoAngle      bool `json:"autoAngle"`
 }
 
 func GuessParams(c Commands) *Params {
 	return &Params{
-		Angle:          -15,
-		AngleSecond:    360 / 3,
+		Angle:          15,
+		AngleSecond:    45,
 		Caps:           true,
 		Distance:       80,
 		DistanceSecond: 20,
+		AutoAngle:      true,
 	}
 }
