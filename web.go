@@ -1,3 +1,4 @@
+//go:generate go-bindata-assetfs page/...
 package main
 
 import (
@@ -15,10 +16,22 @@ type PageInfo struct {
 }
 
 // indexTmpl is a html template for index page.
-var indexTmpl *template.Template
+var (
+	devMode   bool
+	indexTmpl *template.Template
+)
 
 func init() {
-	indexTmpl = template.Must(template.New("index.html").ParseFiles("page/index.html"))
+	devmode := os.Getenv("GOTRACE_DEVMODE") == "1"
+	if devmode {
+		indexTmpl = template.Must(template.New("index.html").Parse("page/index.html"))
+	} else {
+		data, err := Asset("page/index.html")
+		if err != nil {
+			panic(err)
+		}
+		indexTmpl = template.Must(template.New("index.html").Parse(string(data)))
+	}
 }
 
 // StartServer generates webpage, serves it via http
@@ -42,9 +55,13 @@ func StartServer(bind string, data []byte, params *Params) error {
 	}))
 
 	// Handle static files
-	var fs http.FileSystem
-	fs = http.Dir("page")
-	http.Handle("/", http.FileServer(fs))
+	if devMode {
+		var fs http.FileSystem
+		fs = http.Dir("page")
+		http.Handle("/", http.FileServer(fs))
+	} else {
+		http.Handle("/", http.FileServer(assetFS()))
+	}
 	go StartBrowser("http://localhost" + bind)
 
 	return http.ListenAndServe(bind, nil)
