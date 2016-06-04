@@ -7,6 +7,12 @@ import (
 
 type Commands []*Command
 
+const (
+	CmdCreate = "create goroutine"
+	CmdStop   = "stop goroutine"
+	CmdSend   = "send to channel"
+)
+
 // Command is a common structure for all
 // types of supported events (aka 'commands').
 // It's main purpose to handle JSON marshalling.
@@ -41,7 +47,7 @@ func (c *Commands) StartGoroutine(ts int64, name string, gid, pid uint64) {
 	}
 	cmd := &Command{
 		Time:    ts,
-		Command: "create goroutine",
+		Command: CmdCreate,
 		Name:    fmt.Sprintf("#%d", gid),
 		Parent:  parent,
 	}
@@ -51,7 +57,7 @@ func (c *Commands) StartGoroutine(ts int64, name string, gid, pid uint64) {
 func (c *Commands) StopGoroutine(ts int64, name string, gid uint64) {
 	cmd := &Command{
 		Time:    ts,
-		Command: "stop goroutine",
+		Command: CmdStop,
 		Name:    fmt.Sprintf("#%d", gid),
 	}
 	*c = append(*c, cmd)
@@ -60,7 +66,7 @@ func (c *Commands) StopGoroutine(ts int64, name string, gid uint64) {
 func (c *Commands) ChanSend(ts int64, cid, fgid, tgid, val uint64) {
 	cmd := &Command{
 		Time:    ts,
-		Command: "send to channel",
+		Command: CmdSend,
 		From:    fmt.Sprintf("#%d", fgid),
 		To:      fmt.Sprintf("#%d", tgid),
 		Channel: fmt.Sprintf("#%d", cid),
