@@ -2,21 +2,30 @@ package main
 
 // Params represents params for GoThree.js library.
 type Params struct {
-	Angle          int  `json:"angle"`
-	AngleSecond    int  `json:"angle2"`
-	Caps           bool `json:"allCaps"`
-	Distance       int  `json:"distance"`
-	DistanceSecond int  `json:"distance2"`
-	AutoAngle      bool `json:"autoAngle"`
+	Angle          float64 `json:"angle"`
+	AngleSecond    int     `json:"angle2"`
+	Caps           bool    `json:"allCaps"`
+	Distance       int     `json:"distance"`
+	DistanceSecond int     `json:"distance2"`
+	AutoAngle      bool    `json:"autoAngle"`
 }
 
-func GuessParams(c Commands) *Params {
+func GuessParams(cmds Commands) *Params {
+	var (
+		goroutines int
+	)
+	for _, cmd := range cmds {
+		if cmd.Command == CmdCreate {
+			goroutines++
+		}
+	}
+
 	return &Params{
-		Angle:          15,
+		Angle:          360.0 / float64(goroutines-1),
 		AngleSecond:    45,
-		Caps:           true,
+		Caps:           goroutines < 5, // value from head
 		Distance:       80,
 		DistanceSecond: 20,
-		AutoAngle:      true,
+		AutoAngle:      false,
 	}
 }
