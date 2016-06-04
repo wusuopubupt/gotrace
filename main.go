@@ -48,10 +48,10 @@ func main() {
 }
 
 // ProcessCommands processes command list.
-func ProcessCommands(out string, commands Commands) {
-	params := GuessParams(commands)
+func ProcessCommands(out string, cmds Commands) {
+	params := GuessParams(cmds)
 
-	data := commands.toJSON()
+	data := cmds.toJSON()
 	if out != "" {
 		err := ioutil.WriteFile(out, data, 0644)
 		if err != nil {
