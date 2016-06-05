@@ -3,6 +3,7 @@ package main
 import (
 	"container/list"
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 
@@ -14,25 +15,31 @@ func ConvertEvents(events []*trace.Event) (Commands, error) {
 
 	sends := list.New()
 
-	debug := false
+	debug := os.Getenv("GOTRACE_DEBUG") == "1"
 	var lastG uint64
 	for _, ev := range events {
 		switch ev.Type {
 		case trace.EvGoStart:
+			fmt.Println(" ---> GoStart:", ev.G, "from", lastG)
+			if ev.G == 1 && lastG == 0 {
+				c.StartGoroutine(ev.Ts, ev.Stk[0].Fn, ev.G, lastG)
+			}
+			lastG = ev.G
+		case trace.EvGoCreate:
 			if len(ev.Stk) > 0 {
 				if strings.HasPrefix(ev.Stk[0].Fn, "runtime") {
 					if ev.Stk[0].Fn != "runtime.main" {
-						lastG = ev.Args[0]
 						break
 					}
 				}
+				c.StartGoroutine(ev.Ts, ev.Stk[0].Fn, ev.Args[0], ev.G)
 				if debug {
-					fmt.Println(" ---> Create:", ev.G, "from", lastG)
+					fmt.Println(" ---> Create:", ev.Args[0], "from", ev.G)
 				}
-				c.StartGoroutine(ev.Ts, ev.Stk[0].Fn, ev.G, lastG)
 			}
-		case trace.EvGoCreate:
-			lastG = ev.G
+		case trace.EvGoUnblock:
+			lastG = ev.Args[0]
+			fmt.Println("Go: Unblock: set lastG to", lastG)
 		case trace.EvGoEnd:
 			c.StopGoroutine(ev.Ts, "", ev.G)
 			lastG = ev.G
@@ -50,9 +57,7 @@ func ConvertEvents(events []*trace.Event) (Commands, error) {
 			}
 			send := findSource(sends, ev)
 			if send == nil {
-				if debug {
-					//fmt.Println("[DD] Close channel (probably):", ev.G, ev.Args[1])
-				}
+				// it's either channel close() or error in findSource
 				continue
 			}
 			if debug {
