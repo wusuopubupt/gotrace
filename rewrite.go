@@ -5,9 +5,11 @@ import (
 	"errors"
 	"go/ast"
 	"go/printer"
-	"golang.org/x/tools/go/ast/astutil"
+	"go/token"
 	"io/ioutil"
 	"path/filepath"
+
+	"golang.org/x/tools/go/ast/astutil"
 
 	"golang.org/x/tools/go/loader"
 )
@@ -68,6 +70,7 @@ func addCode(path string) ([]byte, error) {
 	// add imports
 	astutil.AddImport(prog.Fset, astFile, "os")
 	astutil.AddImport(prog.Fset, astFile, "runtime/trace")
+	astutil.AddImport(prog.Fset, astFile, "time")
 
 	// add start/stop code
 	ast.Inspect(astFile, func(n ast.Node) bool {
@@ -78,6 +81,7 @@ func addCode(path string) ([]byte, error) {
 				stmts := createTraceStmts()
 				stmts = append(stmts, x.Body.List...)
 				x.Body.List = stmts
+				return true
 			}
 		}
 		return true
@@ -94,6 +98,8 @@ func addCode(path string) ([]byte, error) {
 
 func createTraceStmts() []ast.Stmt {
 	ret := make([]ast.Stmt, 2)
+
+	// trace.Start(os.Stderr)
 	ret[0] = &ast.ExprStmt{
 		X: &ast.CallExpr{
 			Fun: &ast.SelectorExpr{
@@ -108,13 +114,45 @@ func createTraceStmts() []ast.Stmt {
 			},
 		},
 	}
+
+	// defer func(){ time.Sleep(50*time.Millisecond; trace.Stop() }()
 	ret[1] = &ast.DeferStmt{
 		Call: &ast.CallExpr{
-			Fun: &ast.SelectorExpr{
-				X:   &ast.Ident{Name: "trace"},
-				Sel: &ast.Ident{Name: "Stop"},
+			Fun: &ast.FuncLit{
+				Body: &ast.BlockStmt{
+					List: []ast.Stmt{
+						&ast.ExprStmt{
+							X: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X:   &ast.Ident{Name: "time"},
+									Sel: &ast.Ident{Name: "Sleep"},
+								},
+								Args: []ast.Expr{
+									&ast.BinaryExpr{
+										X:  &ast.BasicLit{Kind: token.INT, Value: "50"},
+										Op: token.MUL,
+										Y: &ast.SelectorExpr{
+											X:   &ast.Ident{Name: "time"},
+											Sel: &ast.Ident{Name: "Millisecond"},
+										},
+									},
+								},
+							},
+						},
+						&ast.ExprStmt{
+							X: &ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X:   &ast.Ident{Name: "trace"},
+									Sel: &ast.Ident{Name: "Stop"},
+								},
+							},
+						},
+					},
+				},
+				Type: &ast.FuncType{Params: &ast.FieldList{}},
 			},
 		},
 	}
+
 	return ret
 }
