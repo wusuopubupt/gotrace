@@ -20,7 +20,9 @@ func ConvertEvents(events []*trace.Event) (Commands, error) {
 	for _, ev := range events {
 		switch ev.Type {
 		case trace.EvGoStart:
-			fmt.Println(" ---> GoStart:", ev.G, "from", lastG)
+			if debug {
+				fmt.Println(ev.Ts, "GoStart:", ev.G, "from", lastG, ev.Args)
+			}
 			if ev.G == 1 && lastG == 0 {
 				c.StartGoroutine(ev.Ts, ev.Stk[0].Fn, ev.G, lastG)
 			}
@@ -34,23 +36,25 @@ func ConvertEvents(events []*trace.Event) (Commands, error) {
 				}
 				c.StartGoroutine(ev.Ts, ev.Stk[0].Fn, ev.Args[0], ev.G)
 				if debug {
-					fmt.Println(" ---> Create:", ev.Args[0], "from", ev.G)
+					fmt.Println(ev.Ts, "GoCreate:", ev.Args[0], "from", ev.G)
 				}
 			}
 		case trace.EvGoUnblock:
 			lastG = ev.Args[0]
-			fmt.Println("Go: Unblock: set lastG to", lastG)
+			if debug {
+				fmt.Println(ev.Ts, "GoUnblock: set lastG to", lastG, ev.Args)
+			}
 		case trace.EvGoEnd:
+			if debug {
+				fmt.Println(ev.Ts, "GoEnd:", ev.G)
+			}
 			c.StopGoroutine(ev.Ts, "", ev.G)
 			lastG = ev.G
-			if debug {
-				fmt.Println("End:", ev.G)
-			}
 		case trace.EvGoSend:
-			sends.PushBack(ev)
 			if debug {
 				fmt.Printf("[DD] %d, Send: G:%d, CH: %d, EvID: %d, Val:%d\n", ev.Ts, ev.G, ev.Args[1], ev.Args[0], ev.Args[2])
 			}
+			sends.PushBack(ev)
 		case trace.EvGoRecv:
 			if debug {
 				fmt.Printf("[DD] %d, Recv: G:%d, CH: %d, EvID: %d, Val:%d - %v\n", ev.Ts, ev.G, ev.Args[1], ev.Args[0], ev.Args[2], ev)
@@ -65,7 +69,22 @@ func ConvertEvents(events []*trace.Event) (Commands, error) {
 			}
 			c.ChanSend(send.Ts, ev.Args[1], send.G, ev.G, send.Args[2])
 		case trace.EvGCStart, trace.EvGCDone, trace.EvGCScanStart, trace.EvGCScanDone:
+			if debug {
+				fmt.Println(ev.Ts, "GoGC...", ev.Type, ev.Args)
+			}
 			lastG = 1
+		case trace.EvGoBlockSelect:
+			if debug {
+				fmt.Println("[DD] BlockSelect:", ev.Ts, ev.G, ev.Args)
+			}
+		case trace.EvGoBlockSend:
+			if debug {
+				fmt.Println("[DD] BlockSend:", ev.Ts, ev.G, ev.Args)
+			}
+		case trace.EvGoBlockRecv:
+			if debug {
+				fmt.Println("[DD] BlockRecv:", ev.Ts, ev.G, ev.Args)
+			}
 			/*
 				case trace.EvGoSched, trace.EvGoPreempt,
 					trace.EvGoSleep, trace.EvGoBlock, trace.EvGoBlockSelect, trace.EvGoBlockSend, trace.EvGoBlockRecv,
@@ -76,12 +95,12 @@ func ConvertEvents(events []*trace.Event) (Commands, error) {
 			*/
 		case trace.EvGoStop:
 			if debug {
-				fmt.Println("Stop:", ev.G)
+				fmt.Println(ev.Ts, "GoStop:", ev.G)
 			}
 			lastG = 1
 		default:
 			if debug {
-				fmt.Println("Ev:", ev.Type, ev.G, ev.Args)
+				fmt.Println(ev.Ts, "Ev:", ev.Type, ev.G, ev.Args)
 			}
 		}
 	}
