@@ -1,0 +1,151 @@
+diff --git a/src/internal/trace/parser.go b/src/internal/trace/parser.go
+index 11f9aba..ff28950 100644
+--- a/src/internal/trace/parser.go
++++ b/src/internal/trace/parser.go
+@@ -738,7 +738,9 @@ const (
+ 	EvNextGC         = 34 // memstats.next_gc change [timestamp, next_gc]
+ 	EvTimerGoroutine = 35 // denotes timer goroutine [timer goroutine id]
+ 	EvFutileWakeup   = 36 // denotes that the previous wakeup of this goroutine was futile [timestamp]
+-	EvCount          = 37
++	EvGoSend         = 37 // goroutine chan send [timestamp, stack]
++	EvGoRecv         = 38 // goroutine chan recv [timestamp, stack]
++	EvCount          = 39
+ )
+ 
+ var EventDescriptions = [EvCount]struct {
+@@ -783,4 +785,6 @@ var EventDescriptions = [EvCount]struct {
+ 	EvNextGC:         {"NextGC", false, []string{"mem"}},
+ 	EvTimerGoroutine: {"TimerGoroutine", false, []string{"g", "unused"}},
+ 	EvFutileWakeup:   {"FutileWakeup", false, []string{}},
++	EvGoSend:         {"GoSend", true, []string{}},
++	EvGoRecv:         {"GoRecv", true, []string{}},
+ }
+diff --git a/src/runtime/chan.go b/src/runtime/chan.go
+index 5be18be..5b827af 100644
+--- a/src/runtime/chan.go
++++ b/src/runtime/chan.go
+@@ -23,6 +23,7 @@ const (
+ )
+ 
+ type hchan struct {
++	id       uint64
+ 	qcount   uint           // total data in the queue
+ 	dataqsiz uint           // size of the circular queue
+ 	buf      unsafe.Pointer // points to an array of dataqsiz elements
+@@ -46,6 +47,9 @@ func reflect_makechan(t *chantype, size int64) *hchan {
+ 	return makechan(t, size)
+ }
+ 
++var chID uint64
++var evID uint64 = 1
++
+ func makechan(t *chantype, size int64) *hchan {
+ 	elem := t.elem
+ 
+@@ -82,6 +86,8 @@ func makechan(t *chantype, size int64) *hchan {
+ 	c.elemsize = uint16(elem.size)
+ 	c.elemtype = elem
+ 	c.dataqsiz = uint(size)
++	chID = atomic.Xadd64(&chID, 1)
++	c.id = chID
+ 
+ 	if debugChan {
+ 		print("makechan: chan=", c, "; elemsize=", elem.size, "; elemalg=", elem.alg, "; dataqsiz=", size, "\n")
+@@ -168,6 +174,15 @@ func chansend(t *chantype, c *hchan, ep unsafe.Pointer, block bool, callerpc uin
+ 	}
+ 
+ 	if sg := c.recvq.dequeue(); sg != nil {
++		sg.cid = c.id
++		var elem uint64
++		if ep != nil {
++			elem = uint64(*((*int)(ep)))
++		}
++		evID = atomic.Xadd64(&evID, 1)
++		sg.eventid = atomic.Load64(&evID)
++
++		traceGoSend(sg.eventid, c.id, elem)
+ 		// Found a waiting receiver. We pass the value we want to send
+ 		// directly to the receiver, bypassing the channel buffer (if any).
+ 		send(c, sg, ep, func() { unlock(&c.lock) })
+@@ -209,6 +224,14 @@ func chansend(t *chantype, c *hchan, ep unsafe.Pointer, block bool, callerpc uin
+ 	mysg.selectdone = nil
+ 	gp.waiting = mysg
+ 	gp.param = nil
++	mysg.cid = c.id
++	var elem uint64
++	if ep != nil {
++		elem = uint64(*((*int)(ep)))
++	}
++	evID = atomic.Xadd64(&evID, 1)
++	mysg.eventid = atomic.Load64(&evID)
++	traceGoSend(mysg.eventid, c.id, elem)
+ 	c.sendq.enqueue(mysg)
+ 	goparkunlock(&c.lock, "chan send", traceEvGoBlockSend, 3)
+ 
+@@ -425,6 +448,11 @@ func chanrecv(t *chantype, c *hchan, ep unsafe.Pointer, block bool) (selected, r
+ 		// and add sender's value to the tail of the queue (both map to
+ 		// the same buffer slot because the queue is full).
+ 		recv(c, sg, ep, func() { unlock(&c.lock) })
++		var elem uint64
++		if sg.elem != nil {
++			elem = uint64(*((*int)(sg.elem)))
++		}
++		traceGoRecv(sg.eventid, c.id, elem)
+ 		return true, true
+ 	}
+ 
+@@ -469,6 +497,12 @@ func chanrecv(t *chantype, c *hchan, ep unsafe.Pointer, block bool) (selected, r
+ 	c.recvq.enqueue(mysg)
+ 	goparkunlock(&c.lock, "chan receive", traceEvGoBlockRecv, 3)
+ 
++	var elem uint64
++	if ep != nil {
++		elem = uint64(*((*int)(ep)))
++	}
++	traceGoRecv(mysg.eventid, c.id, elem)
++
+ 	// someone woke us up
+ 	if mysg != gp.waiting {
+ 		throw("G waiting list is corrupted")
+diff --git a/src/runtime/runtime2.go b/src/runtime/runtime2.go
+index 917fe89..02e7858 100644
+--- a/src/runtime/runtime2.go
++++ b/src/runtime/runtime2.go
+@@ -171,6 +171,10 @@ type sudog struct {
+ 	releasetime int64
+ 	nrelease    int32  // -1 for acquire
+ 	waitlink    *sudog // g.waiting list
++
++	eventid uint64 // used for correlating send/recv
++	value   string // used for representing value to tracer
++	cid     uint64 // channel id
+ }
+ 
+ type gcstats struct {
+diff --git a/src/runtime/trace.go b/src/runtime/trace.go
+index 805c34f..6f1c5ed 100644
+--- a/src/runtime/trace.go
++++ b/src/runtime/trace.go
+@@ -57,7 +57,9 @@ const (
+ 	traceEvNextGC         = 34 // memstats.next_gc change [timestamp, next_gc]
+ 	traceEvTimerGoroutine = 35 // denotes timer goroutine [timer goroutine id]
+ 	traceEvFutileWakeup   = 36 // denotes that the previous wakeup of this goroutine was futile [timestamp]
+-	traceEvCount          = 37
++	traceEvGoSend         = 37 // goroutine on chan send [timestamp, stack]
++	traceEvGoRecv         = 38 // goroutine on chan recv [timestamp, stack]
++	traceEvCount          = 39
+ )
+ 
+ const (
+@@ -904,3 +906,11 @@ func traceHeapAlloc() {
+ func traceNextGC() {
+ 	traceEvent(traceEvNextGC, -1, memstats.next_gc)
+ }
++
++func traceGoSend(eid, cid, val uint64) {
++	traceEvent(traceEvGoSend, -1, eid, cid, val)
++}
++
++func traceGoRecv(eid, cid, val uint64) {
++	traceEvent(traceEvGoRecv, -1, eid, cid, val)
++}
