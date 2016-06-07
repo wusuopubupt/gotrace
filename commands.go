@@ -81,3 +81,41 @@ type ByTimestamp Commands
 func (a ByTimestamp) Len() int           { return len(a) }
 func (a ByTimestamp) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByTimestamp) Less(i, j int) bool { return a[i].Time < a[j].Time }
+
+// Count counts total number of commands
+func (c Commands) Count() int {
+	return len(c)
+}
+
+// CountCreateGoroutine counts total number of CreateGoroutine commands.
+func (c Commands) CountCreateGoroutine() int {
+	var count int
+	for _, cmd := range c {
+		if cmd.Command == CmdCreate {
+			count++
+		}
+	}
+	return count
+}
+
+// CountStopGoroutine counts total number of StopGoroutine commands.
+func (c Commands) CountStopGoroutine() int {
+	var count int
+	for _, cmd := range c {
+		if cmd.Command == CmdStop {
+			count++
+		}
+	}
+	return count
+}
+
+// CountSendToChannel counts total number of SendToChannel commands.
+func (c Commands) CountSendToChannel() int {
+	var count int
+	for _, cmd := range c {
+		if cmd.Command == CmdSend {
+			count++
+		}
+	}
+	return count
+}
