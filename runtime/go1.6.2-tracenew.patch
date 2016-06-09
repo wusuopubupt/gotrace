@@ -21,7 +21,7 @@ index 11f9aba..ff28950 100644
 +	EvGoRecv:         {"GoRecv", true, []string{}},
  }
 diff --git a/src/runtime/chan.go b/src/runtime/chan.go
-index 5be18be..9c6ff9d 100644
+index 5be18be..4966723 100644
 --- a/src/runtime/chan.go
 +++ b/src/runtime/chan.go
 @@ -23,6 +23,7 @@ const (
@@ -54,19 +54,27 @@ index 5be18be..9c6ff9d 100644
  
  	if debugChan {
  		print("makechan: chan=", c, "; elemsize=", elem.size, "; elemalg=", elem.alg, "; dataqsiz=", size, "\n")
-@@ -168,6 +177,11 @@ func chansend(t *chantype, c *hchan, ep unsafe.Pointer, block bool, callerpc uin
+@@ -168,6 +177,8 @@ func chansend(t *chantype, c *hchan, ep unsafe.Pointer, block bool, callerpc uin
  	}
  
  	if sg := c.recvq.dequeue(); sg != nil {
 +		sg.cid = c.id
-+		evID = atomic.Xadd64(&evID, 1)
-+		sg.eventid = atomic.Load64(&evID)
-+		traceGoSend(sg.eventid, c.id, elem2int(ep))
 +
  		// Found a waiting receiver. We pass the value we want to send
  		// directly to the receiver, bypassing the channel buffer (if any).
  		send(c, sg, ep, func() { unlock(&c.lock) })
-@@ -209,6 +223,12 @@ func chansend(t *chantype, c *hchan, ep unsafe.Pointer, block bool, callerpc uin
+@@ -181,6 +192,10 @@ func chansend(t *chantype, c *hchan, ep unsafe.Pointer, block bool, callerpc uin
+ 			raceacquire(qp)
+ 			racerelease(qp)
+ 		}
++
++		evID = atomic.Xadd64(&evID, 1)
++		traceGoSend(evID, c.id, elem2int(ep))
++
+ 		typedmemmove(c.elemtype, qp, ep)
+ 		c.sendx++
+ 		if c.sendx == c.dataqsiz {
+@@ -209,6 +224,12 @@ func chansend(t *chantype, c *hchan, ep unsafe.Pointer, block bool, callerpc uin
  	mysg.selectdone = nil
  	gp.waiting = mysg
  	gp.param = nil
@@ -79,7 +87,17 @@ index 5be18be..9c6ff9d 100644
  	c.sendq.enqueue(mysg)
  	goparkunlock(&c.lock, "chan send", traceEvGoBlockSend, 3)
  
-@@ -370,7 +390,6 @@ func chanrecv2(t *chantype, c *hchan, elem unsafe.Pointer) (received bool) {
+@@ -257,6 +278,9 @@ func send(c *hchan, sg *sudog, ep unsafe.Pointer, unlockf func()) {
+ 			c.sendx = c.recvx // c.sendx = (c.sendx+1) % c.dataqsiz
+ 		}
+ 	}
++	evID = atomic.Xadd64(&evID, 1)
++	sg.eventid = atomic.Load64(&evID)
++	traceGoSend(evID, c.id, elem2int(ep))
+ 	unlockf()
+ 	if sg.elem != nil {
+ 		sendDirect(c.elemtype, sg, ep)
+@@ -370,7 +394,6 @@ func chanrecv2(t *chantype, c *hchan, elem unsafe.Pointer) (received bool) {
  func chanrecv(t *chantype, c *hchan, ep unsafe.Pointer, block bool) (selected, received bool) {
  	// raceenabled: don't need to check ep, as it is always on the stack
  	// or is new memory allocated by reflect.
@@ -87,15 +105,23 @@ index 5be18be..9c6ff9d 100644
  	if debugChan {
  		print("chanrecv: chan=", c, "\n")
  	}
-@@ -424,6 +443,7 @@ func chanrecv(t *chantype, c *hchan, ep unsafe.Pointer, block bool) (selected, r
- 		// directly from sender.  Otherwise, recieve from head of queue
- 		// and add sender's value to the tail of the queue (both map to
- 		// the same buffer slot because the queue is full).
-+		traceGoRecv(sg.eventid, c.id, elem2int(sg.elem))
- 		recv(c, sg, ep, func() { unlock(&c.lock) })
- 		return true, true
- 	}
-@@ -469,6 +489,8 @@ func chanrecv(t *chantype, c *hchan, ep unsafe.Pointer, block bool) (selected, r
+@@ -412,6 +435,7 @@ func chanrecv(t *chantype, c *hchan, ep unsafe.Pointer, block bool) (selected, r
+ 		if raceenabled {
+ 			raceacquire(unsafe.Pointer(c))
+ 		}
++		traceGoRecv(222, c.id, elem2int(ep))
+ 		unlock(&c.lock)
+ 		if ep != nil {
+ 			memclr(ep, uintptr(c.elemsize))
+@@ -438,6 +462,7 @@ func chanrecv(t *chantype, c *hchan, ep unsafe.Pointer, block bool) (selected, r
+ 		if ep != nil {
+ 			typedmemmove(c.elemtype, ep, qp)
+ 		}
++		traceGoRecv(333, c.id, elem2int(ep))
+ 		memclr(qp, uintptr(c.elemsize))
+ 		c.recvx++
+ 		if c.recvx == c.dataqsiz {
+@@ -469,6 +494,8 @@ func chanrecv(t *chantype, c *hchan, ep unsafe.Pointer, block bool) (selected, r
  	c.recvq.enqueue(mysg)
  	goparkunlock(&c.lock, "chan receive", traceEvGoBlockRecv, 3)
  
@@ -104,7 +130,23 @@ index 5be18be..9c6ff9d 100644
  	// someone woke us up
  	if mysg != gp.waiting {
  		throw("G waiting list is corrupted")
-@@ -687,3 +709,10 @@ func racesync(c *hchan, sg *sudog) {
+@@ -507,6 +534,7 @@ func recv(c *hchan, sg *sudog, ep unsafe.Pointer, unlockf func()) {
+ 			// ep points to our own stack or heap, so nothing
+ 			// special (ala sendDirect) needed here.
+ 			typedmemmove(c.elemtype, ep, sg.elem)
++			traceGoRecv(sg.eventid, c.id, elem2int(ep))
+ 		}
+ 	} else {
+ 		// Queue is full.  Take the item at the
+@@ -526,6 +554,7 @@ func recv(c *hchan, sg *sudog, ep unsafe.Pointer, unlockf func()) {
+ 		}
+ 		// copy data from sender to queue
+ 		typedmemmove(c.elemtype, qp, sg.elem)
++		traceGoRecv(sg.eventid, c.id, elem2int(ep))
+ 		c.recvx++
+ 		if c.recvx == c.dataqsiz {
+ 			c.recvx = 0
+@@ -687,3 +716,10 @@ func racesync(c *hchan, sg *sudog) {
  	racereleaseg(sg.g, chanbuf(c, 0))
  	raceacquire(chanbuf(c, 0))
  }
@@ -130,6 +172,26 @@ index 917fe89..02e7858 100644
  }
  
  type gcstats struct {
+diff --git a/src/runtime/select.go b/src/runtime/select.go
+index b6c3fea..ed98c87 100644
+--- a/src/runtime/select.go
++++ b/src/runtime/select.go
+@@ -486,6 +486,7 @@ bufrecv:
+ 	if cas.elem != nil {
+ 		typedmemmove(c.elemtype, cas.elem, qp)
+ 	}
++	traceGoRecv(666, c.id, elem2int(cas.elem))
+ 	memclr(qp, uintptr(c.elemsize))
+ 	c.recvx++
+ 	if c.recvx == c.dataqsiz {
+@@ -506,6 +507,7 @@ bufsend:
+ 		msanread(cas.elem, c.elemtype.size)
+ 	}
+ 	typedmemmove(c.elemtype, chanbuf(c, c.sendx), cas.elem)
++	traceGoSend(666, c.id, elem2int(cas.elem))
+ 	c.sendx++
+ 	if c.sendx == c.dataqsiz {
+ 		c.sendx = 0
 diff --git a/src/runtime/trace.go b/src/runtime/trace.go
 index 805c34f..6f1c5ed 100644
 --- a/src/runtime/trace.go
