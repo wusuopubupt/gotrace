@@ -21,28 +21,31 @@ index 11f9aba..ff28950 100644
 +	EvGoRecv:         {"GoRecv", true, []string{}},
  }
 diff --git a/src/runtime/chan.go b/src/runtime/chan.go
-index 5be18be..5b827af 100644
+index 5be18be..9c6ff9d 100644
 --- a/src/runtime/chan.go
 +++ b/src/runtime/chan.go
 @@ -23,6 +23,7 @@ const (
  )
  
  type hchan struct {
-+	id       uint64
++	id       uint64         // channel id for using in send/recv events
  	qcount   uint           // total data in the queue
  	dataqsiz uint           // size of the circular queue
  	buf      unsafe.Pointer // points to an array of dataqsiz elements
-@@ -46,6 +47,9 @@ func reflect_makechan(t *chantype, size int64) *hchan {
+@@ -46,6 +47,12 @@ func reflect_makechan(t *chantype, size int64) *hchan {
  	return makechan(t, size)
  }
  
-+var chID uint64
-+var evID uint64 = 1
++// global evil counters for channel and send/recv event IDs
++var (
++	chID uint64 = 1
++	evID uint64 = 1
++)
 +
  func makechan(t *chantype, size int64) *hchan {
  	elem := t.elem
  
-@@ -82,6 +86,8 @@ func makechan(t *chantype, size int64) *hchan {
+@@ -82,6 +89,8 @@ func makechan(t *chantype, size int64) *hchan {
  	c.elemsize = uint16(elem.size)
  	c.elemtype = elem
  	c.dataqsiz = uint(size)
@@ -51,62 +54,67 @@ index 5be18be..5b827af 100644
  
  	if debugChan {
  		print("makechan: chan=", c, "; elemsize=", elem.size, "; elemalg=", elem.alg, "; dataqsiz=", size, "\n")
-@@ -168,6 +174,15 @@ func chansend(t *chantype, c *hchan, ep unsafe.Pointer, block bool, callerpc uin
+@@ -168,6 +177,11 @@ func chansend(t *chantype, c *hchan, ep unsafe.Pointer, block bool, callerpc uin
  	}
  
  	if sg := c.recvq.dequeue(); sg != nil {
 +		sg.cid = c.id
-+		var elem uint64
-+		if ep != nil {
-+			elem = uint64(*((*int)(ep)))
-+		}
 +		evID = atomic.Xadd64(&evID, 1)
 +		sg.eventid = atomic.Load64(&evID)
++		traceGoSend(sg.eventid, c.id, elem2int(ep))
 +
-+		traceGoSend(sg.eventid, c.id, elem)
  		// Found a waiting receiver. We pass the value we want to send
  		// directly to the receiver, bypassing the channel buffer (if any).
  		send(c, sg, ep, func() { unlock(&c.lock) })
-@@ -209,6 +224,14 @@ func chansend(t *chantype, c *hchan, ep unsafe.Pointer, block bool, callerpc uin
+@@ -209,6 +223,12 @@ func chansend(t *chantype, c *hchan, ep unsafe.Pointer, block bool, callerpc uin
  	mysg.selectdone = nil
  	gp.waiting = mysg
  	gp.param = nil
++
 +	mysg.cid = c.id
-+	var elem uint64
-+	if ep != nil {
-+		elem = uint64(*((*int)(ep)))
-+	}
 +	evID = atomic.Xadd64(&evID, 1)
 +	mysg.eventid = atomic.Load64(&evID)
-+	traceGoSend(mysg.eventid, c.id, elem)
++	traceGoSend(mysg.eventid, c.id, elem2int(ep))
++
  	c.sendq.enqueue(mysg)
  	goparkunlock(&c.lock, "chan send", traceEvGoBlockSend, 3)
  
-@@ -425,6 +448,11 @@ func chanrecv(t *chantype, c *hchan, ep unsafe.Pointer, block bool) (selected, r
+@@ -370,7 +390,6 @@ func chanrecv2(t *chantype, c *hchan, elem unsafe.Pointer) (received bool) {
+ func chanrecv(t *chantype, c *hchan, ep unsafe.Pointer, block bool) (selected, received bool) {
+ 	// raceenabled: don't need to check ep, as it is always on the stack
+ 	// or is new memory allocated by reflect.
+-
+ 	if debugChan {
+ 		print("chanrecv: chan=", c, "\n")
+ 	}
+@@ -424,6 +443,7 @@ func chanrecv(t *chantype, c *hchan, ep unsafe.Pointer, block bool) (selected, r
+ 		// directly from sender.  Otherwise, recieve from head of queue
  		// and add sender's value to the tail of the queue (both map to
  		// the same buffer slot because the queue is full).
++		traceGoRecv(sg.eventid, c.id, elem2int(sg.elem))
  		recv(c, sg, ep, func() { unlock(&c.lock) })
-+		var elem uint64
-+		if sg.elem != nil {
-+			elem = uint64(*((*int)(sg.elem)))
-+		}
-+		traceGoRecv(sg.eventid, c.id, elem)
  		return true, true
  	}
- 
-@@ -469,6 +497,12 @@ func chanrecv(t *chantype, c *hchan, ep unsafe.Pointer, block bool) (selected, r
+@@ -469,6 +489,8 @@ func chanrecv(t *chantype, c *hchan, ep unsafe.Pointer, block bool) (selected, r
  	c.recvq.enqueue(mysg)
  	goparkunlock(&c.lock, "chan receive", traceEvGoBlockRecv, 3)
  
-+	var elem uint64
-+	if ep != nil {
-+		elem = uint64(*((*int)(ep)))
-+	}
-+	traceGoRecv(mysg.eventid, c.id, elem)
++	traceGoRecv(mysg.eventid, c.id, elem2int(ep))
 +
  	// someone woke us up
  	if mysg != gp.waiting {
  		throw("G waiting list is corrupted")
+@@ -687,3 +709,10 @@ func racesync(c *hchan, sg *sudog) {
+ 	racereleaseg(sg.g, chanbuf(c, 0))
+ 	raceacquire(chanbuf(c, 0))
+ }
++
++func elem2int(elem unsafe.Pointer) uint64 {
++	if elem == nil {
++		return 0
++	}
++	return uint64(*((*int)(elem)))
++}
 diff --git a/src/runtime/runtime2.go b/src/runtime/runtime2.go
 index 917fe89..02e7858 100644
 --- a/src/runtime/runtime2.go
