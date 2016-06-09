@@ -22,8 +22,8 @@ var (
 )
 
 func init() {
-	devmode := os.Getenv("GOTRACE_DEVMODE") == "1"
-	if devmode {
+	devMode = os.Getenv("GOTRACE_DEVMODE") == "1"
+	if devMode {
 		indexTmpl = template.Must(template.New("index.html").Parse("page/index.html"))
 	} else {
 		data, err := Asset("page/index.html")
