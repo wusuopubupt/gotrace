@@ -35,4 +35,5 @@ func main() {
 			fmt.Println("Recv from ch1", v)
 		}
 	}
+	time.Sleep(100 * time.Millisecond)
 }
