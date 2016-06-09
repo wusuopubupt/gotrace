@@ -139,8 +139,11 @@ GoThree.Trace = function() {
 		// grow existing goroutines along the time axis
 		for (var i = 0; i < _goroutines.length; i++) {
 			var geom = _goroutines[i].line.geometry;
-			var end = geom.vertices[1];
-			end.y -= 1/_speed;	
+			var len = geom.vertices.length - 1;
+			var end = geom.vertices[len];
+			var end2 = new THREE.Vector3( end.x, end.y - 1/_speed, end.z );
+			geom.colors.push(new THREE.Color(0, 0, 1));
+			geom.vertices.push( end2, end);
 			geom.verticesNeedUpdate = true;
 		};
 	};
@@ -168,8 +171,10 @@ GoThree.Trace = function() {
 		var start = new THREE.Vector3( x, y, z );
 		var end = new THREE.Vector3( x, y - 10, z );
 		geom.vertices.push( start, end );
-		var mat = new THREE.LineBasicMaterial( { color: 0x0000ff, linewidth: width, } );
-		goroutine.line = new THREE.Line(geom, mat);
+		geom.colors[0] = new THREE.Color(0, 1, 0);
+		geom.colors[1] = new THREE.Color(0, 0, 1);
+		var mat = new THREE.LineBasicMaterial( { color: 0x00ff00, linewidth: width, vertexColors: THREE.VertexColors } );
+		goroutine.line = new THREE.LineSegments(geom, mat);
 
 		// create link with parent line
 		if (parent != undefined) {
