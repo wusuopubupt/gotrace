@@ -8,9 +8,11 @@ import (
 type Commands []*Command
 
 const (
-	CmdCreate = "create goroutine"
-	CmdStop   = "stop goroutine"
-	CmdSend   = "send to channel"
+	CmdCreate  = "create goroutine"
+	CmdStop    = "stop goroutine"
+	CmdSend    = "send to channel"
+	CmdBlock   = "block goroutine"
+	CmdUnblock = "unblock goroutine"
 )
 
 // Command is a common structure for all
@@ -71,6 +73,24 @@ func (c *Commands) ChanSend(ts int64, cid, fgid, tgid, val uint64) {
 		To:      fmt.Sprintf("#%d", tgid),
 		Channel: fmt.Sprintf("#%d", cid),
 		Value:   fmt.Sprintf("%d", val),
+	}
+	*c = append(*c, cmd)
+}
+
+func (c *Commands) BlockGoroutine(ts int64, gid uint64) {
+	cmd := &Command{
+		Time:    ts,
+		Command: CmdBlock,
+		Name:    fmt.Sprintf("#%d", gid),
+	}
+	*c = append(*c, cmd)
+}
+
+func (c *Commands) UnblockGoroutine(ts int64, gid uint64) {
+	cmd := &Command{
+		Time:    ts,
+		Command: CmdUnblock,
+		Name:    fmt.Sprintf("#%d", gid),
 	}
 	*c = append(*c, cmd)
 }
