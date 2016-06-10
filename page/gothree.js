@@ -28,6 +28,16 @@ GoThree.Trace = function() {
 		"go_link":  "#29D9C2",
 		"go_cap":  "#615469"
 	};
+	var _colors2 = {
+        "send_arrow":  "#F8CA4D",
+        "send_value":  "#F8CA4D",
+        "go_normal":  "#3F5666",
+        "go_blocked":  "#EA6045",
+        "go_sleep":  "#2F3440",
+        "go_link":  "#3F5666",
+        "go_cap":  "#615469",
+        "go_background": "#F8CA4D"
+    };
 
 	var _colors = _colors1;
 
@@ -449,15 +459,15 @@ GoThree.Trace = function() {
 	};
 
 	this._cmd_block_goroutine = function(name) {
-		this._change_g_color(name, _colors["go_blocked"], 1);
+		this._change_g_color(name, _colors["go_blocked"], 2);
 	};
 
 	this._cmd_unblock_goroutine = function(name) {
-		this._change_g_color(name, _colors["go_normal"], 2);
+		this._change_g_color(name, _colors["go_normal"], 5);
 	};
 
 	this._cmd_sleep_goroutine = function(name) {
-		this._change_g_color(name, _colors["go_sleep"], 5);
+		this._change_g_color(name, _colors["go_sleep"], 1);
 	};
 
 	this._change_g_color = function(name, color, width) {
