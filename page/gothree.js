@@ -19,6 +19,18 @@ GoThree.Trace = function() {
 	var _data = {};
 	var _scene = undefined;
 
+	var _colors1 = {
+		"send_arrow":  "#BDF271",
+		"send_value":  "#BDF271",
+		"go_normal":  "#29D9C2",
+		"go_blocked":  "#01A2A6",
+		"go_sleep":  "#01A2A6",
+		"go_link":  "#29D9C2",
+		"go_cap":  "#615469"
+	};
+
+	var _colors = _colors1;
+
 	var _t = 0;
 
 	// total drawing time/length. Actually, main is of length _total_time.
@@ -177,7 +189,7 @@ GoThree.Trace = function() {
 		var start = new THREE.Vector3( x, y, z );
 		var end = new THREE.Vector3( x, y, z );
 		geom.vertices.push( start, end );
-		var mat = new THREE.LineBasicMaterial( { color: 'blue', linewidth: 2 } );
+		var mat = new THREE.LineBasicMaterial( { color: _colors["go_normal"], linewidth: 2 } );
 		goroutine.line = new THREE.Line(geom, mat);
 
 		// create link with parent line
@@ -189,7 +201,7 @@ GoThree.Trace = function() {
 				var lend = new THREE.Vector3( x, y, z );
 				var lgeom = new THREE.Geometry();
 				lgeom.vertices.push( lstart, lend );
-				var mat = new THREE.LineBasicMaterial( { color: 0x0000ff, linewidth: 0.5, } );
+				var mat = new THREE.LineBasicMaterial( { color: _colors["go_link"], linewidth: 0.5, } );
 				lline = new THREE.Line( lgeom, mat );
 				_scene.add( lline );
 			}
@@ -198,7 +210,7 @@ GoThree.Trace = function() {
 		// create cap text
 		var shapes = THREE.FontUtils.generateShapes(this._goroutine_name(name), { font: "helvetiker", weight: "normal", size: 6 } );
 		var geom = new THREE.ShapeGeometry( shapes );
-		var mat = new THREE.MeshBasicMaterial({color: '#0000ff'});
+		var mat = new THREE.MeshBasicMaterial({color: _colors["go_cap"]});
 		var text = new THREE.Mesh( geom, mat );
 		text.position.x = x;
 		text.position.y = y;
@@ -239,7 +251,9 @@ GoThree.Trace = function() {
 		var geom = new THREE.Geometry();
 		geom.vertices.push(head);
 		geom.vertices.push(tail);
-		var line = new THREE.Line(geom, new THREE.LineBasicMaterial({color: '#ff0000'}));
+		var line = new THREE.Line(geom, new THREE.LineBasicMaterial({
+			color: _colors["send_arrow"],
+		}));
 		_scene.add(line); 
 
 		// create tween for line animation
@@ -253,9 +267,9 @@ GoThree.Trace = function() {
 
 		// create text with value
 		var trace = {};
-		var shapes = THREE.FontUtils.generateShapes(value, { font: "helvetiker", weight: "normal", size: 3 } );
+		var shapes = THREE.FontUtils.generateShapes(value, { font: "helvetiker", weight: "normal", size: 1 } );
 		var geom = new THREE.ShapeGeometry( shapes );
-		var mat = new THREE.MeshBasicMaterial({color: '#ff0000'});
+		var mat = new THREE.MeshBasicMaterial({color: _colors["send_value"]});
 		trace.text = new THREE.Mesh( geom, mat );
 		// get center of the line
 		var c = new THREE.Vector3().addVectors( start, targetV ).multiplyScalar( 0.5 );
@@ -276,7 +290,7 @@ GoThree.Trace = function() {
 		}).onComplete(function(){
 			var direction = new THREE.Vector3().subVectors(targetV, head);
 			var len = direction.length();
-			var arrow = new THREE.ArrowHelper(direction.clone().normalize(), head, len, 0xff0000, 5, 3);
+			var arrow = new THREE.ArrowHelper(direction.clone().normalize(), head, len, _colors["send_arrow"], 1, 1);
 			_scene.add( arrow ); 
 		});
 
@@ -411,7 +425,7 @@ GoThree.Trace = function() {
 			var end = new THREE.Vector3(pgeom.x, ggeom.y, pgeom.z);
 			var geom = new THREE.Geometry();
 			geom.vertices.push( start, end );
-			var mat = new THREE.LineBasicMaterial( { color: 0x0000ff, linewidth: 1, } );
+			var mat = new THREE.LineBasicMaterial( { color: _colors["go_link"], linewidth: 1, } );
 			line = new THREE.Line( geom, mat );
 			_scene.add( line );
 			_goroutines.remove({name: name});
@@ -426,7 +440,7 @@ GoThree.Trace = function() {
 		}
 		var pos = g.line.geometry.vertices[1];
 		var geom = new THREE.SphereGeometry( 1.2, 1, 1 );
-		var mat = new THREE.MeshBasicMaterial( {color: 0xff0000} );
+		var mat = new THREE.MeshBasicMaterial( {color: _colors["channel"]} );
 		var sphere = new THREE.Mesh( geom, mat );
 		sphere.position.x = pos.x;
 		sphere.position.y = pos.y;
@@ -435,15 +449,15 @@ GoThree.Trace = function() {
 	};
 
 	this._cmd_block_goroutine = function(name) {
-		this._change_g_color(name, "gray", 1);
+		this._change_g_color(name, _colors["go_blocked"], 1);
 	};
 
 	this._cmd_unblock_goroutine = function(name) {
-		this._change_g_color(name, "blue", 2);
+		this._change_g_color(name, _colors["go_normal"], 2);
 	};
 
 	this._cmd_sleep_goroutine = function(name) {
-		this._change_g_color(name, "lime", 2);
+		this._change_g_color(name, _colors["go_sleep"], 5);
 	};
 
 	this._change_g_color = function(name, color, width) {
