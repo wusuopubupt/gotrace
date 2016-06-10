@@ -43,7 +43,7 @@ function init() {
 	*/
 
 	// RENDERER
-	renderer = new THREE.WebGLRenderer({ alpha: true });
+	renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, });
 	renderer.setSize( width, height );
 	renderer.setClearColor( '#1D1F17', 1);
 

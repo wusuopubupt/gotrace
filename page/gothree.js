@@ -226,7 +226,7 @@ GoThree.Trace = function() {
 		}
 
 		// create cap text
-		var shapes = THREE.FontUtils.generateShapes(this._goroutine_name(name), { font: "helvetiker", weight: "normal", size: 6 } );
+		var shapes = THREE.FontUtils.generateShapes(this._goroutine_name(name), { font: "helvetiker", weight: "normal", size: 3 } );
 		var geom = new THREE.ShapeGeometry( shapes );
 		var mat = new THREE.MeshBasicMaterial({color: _colors["go_cap"]});
 		var text = new THREE.Mesh( geom, mat );
