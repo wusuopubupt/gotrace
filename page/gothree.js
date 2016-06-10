@@ -41,8 +41,8 @@ GoThree.Trace = function() {
         "send_arrow":  "#00D6DD",
         "send_value":  "#00D6DD",
         "go_normal":  "#D4FF00",
-        "go_link":  "#D4FF00",
-        "go_blocked":  "#B00000",
+        "go_link":  "#B1B4B5",
+        "go_blocked":  "#ED0000",
         "go_sleep":  "#6C8200",
         "go_cap":  "#D4FF00",
     };
