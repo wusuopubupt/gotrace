@@ -49,6 +49,7 @@ func StartServer(bind string, data []byte, params *Params) error {
 		data, err := json.MarshalIndent(params, "", "  ")
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintln(os.Stderr, "[ERROR] failed to render params:", err)
 			return
 		}
 		w.Write(data)

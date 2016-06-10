@@ -11,7 +11,7 @@ import (
 )
 
 func ConvertEvents(events []*trace.Event) (Commands, error) {
-	var c Commands
+	c := NewCommands()
 
 	sends := list.New()
 
@@ -108,11 +108,11 @@ func ConvertEvents(events []*trace.Event) (Commands, error) {
 	}
 
 	// sort events
-	sort.Sort(ByTimestamp(c))
+	sort.Sort(ByTimestamp(c.cmds))
 
 	// insert stop main
 	// TODO: figure out why it's not in the trace
-	lastTs := c[len(c)-1].Time
+	lastTs := c.cmds[len(c.cmds)-1].Time
 	c.StopGoroutine(lastTs+10, "", 1)
 
 	return c, nil

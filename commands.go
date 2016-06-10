@@ -5,7 +5,16 @@ import (
 	"fmt"
 )
 
-type Commands []*Command
+type Commands struct {
+	cmds []*Command
+	gd   map[string]int
+}
+
+func NewCommands() Commands {
+	return Commands{
+		gd: make(map[string]int),
+	}
+}
 
 const (
 	CmdCreate  = "create goroutine"
@@ -31,10 +40,11 @@ type Command struct {
 	Value    interface{} "json:\"value,omitempty\""
 	EventID  string      "json:\"eid,omitempty\""
 	Duration int64       "json:\"duration,omitempty\""
+	Depth    int         "json:\"depth,omitempty\""
 }
 
 func (c *Commands) toJSON() []byte {
-	data, err := json.MarshalIndent(c, "", "  ")
+	data, err := json.MarshalIndent(c.cmds, "", "  ")
 	if err != nil {
 		panic(err)
 	}
@@ -42,19 +52,29 @@ func (c *Commands) toJSON() []byte {
 	return data
 }
 
-func (c *Commands) StartGoroutine(ts int64, name string, gid, pid uint64) {
+func (c *Commands) StartGoroutine(ts int64, gname string, gid, pid uint64) {
+	// TODO: use gname
+	name := fmt.Sprintf("#%d", gid)
 	parent := fmt.Sprintf("#%d", pid)
+
 	// ignore parent for 'main()' which has pid 0
 	if pid == 0 {
 		parent = ""
 	}
+
+	c.gd[name] = 0
+	if parent != "" {
+		c.gd[name] = c.gd[parent] + 1
+	}
+
 	cmd := &Command{
 		Time:    ts,
 		Command: CmdCreate,
-		Name:    fmt.Sprintf("#%d", gid),
+		Name:    name,
 		Parent:  parent,
+		Depth:   c.gd[name],
 	}
-	*c = append(*c, cmd)
+	c.cmds = append(c.cmds, cmd)
 }
 
 func (c *Commands) StopGoroutine(ts int64, name string, gid uint64) {
@@ -63,7 +83,7 @@ func (c *Commands) StopGoroutine(ts int64, name string, gid uint64) {
 		Command: CmdStop,
 		Name:    fmt.Sprintf("#%d", gid),
 	}
-	*c = append(*c, cmd)
+	c.cmds = append(c.cmds, cmd)
 }
 
 func (c *Commands) ChanSend(ts int64, cid, fgid, tgid, val uint64) {
@@ -75,7 +95,7 @@ func (c *Commands) ChanSend(ts int64, cid, fgid, tgid, val uint64) {
 		Channel: fmt.Sprintf("#%d", cid),
 		Value:   fmt.Sprintf("%d", val),
 	}
-	*c = append(*c, cmd)
+	c.cmds = append(c.cmds, cmd)
 }
 
 func (c *Commands) BlockGoroutine(ts int64, gid uint64) {
@@ -84,7 +104,7 @@ func (c *Commands) BlockGoroutine(ts int64, gid uint64) {
 		Command: CmdBlock,
 		Name:    fmt.Sprintf("#%d", gid),
 	}
-	*c = append(*c, cmd)
+	c.cmds = append(c.cmds, cmd)
 }
 
 func (c *Commands) UnblockGoroutine(ts int64, gid uint64) {
@@ -93,7 +113,7 @@ func (c *Commands) UnblockGoroutine(ts int64, gid uint64) {
 		Command: CmdUnblock,
 		Name:    fmt.Sprintf("#%d", gid),
 	}
-	*c = append(*c, cmd)
+	c.cmds = append(c.cmds, cmd)
 }
 
 func (c *Commands) SleepGoroutine(ts int64, gid uint64) {
@@ -102,11 +122,11 @@ func (c *Commands) SleepGoroutine(ts int64, gid uint64) {
 		Command: CmdSleep,
 		Name:    fmt.Sprintf("#%d", gid),
 	}
-	*c = append(*c, cmd)
+	c.cmds = append(c.cmds, cmd)
 }
 
 //ByTimestamp implements sort.Interface for sorting command by timestamp.
-type ByTimestamp Commands
+type ByTimestamp []*Command
 
 func (a ByTimestamp) Len() int           { return len(a) }
 func (a ByTimestamp) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
@@ -114,13 +134,13 @@ func (a ByTimestamp) Less(i, j int) bool { return a[i].Time < a[j].Time }
 
 // Count counts total number of commands
 func (c Commands) Count() int {
-	return len(c)
+	return len(c.cmds)
 }
 
 // CountCreateGoroutine counts total number of CreateGoroutine commands.
 func (c Commands) CountCreateGoroutine() int {
 	var count int
-	for _, cmd := range c {
+	for _, cmd := range c.cmds {
 		if cmd.Command == CmdCreate {
 			count++
 		}
@@ -131,7 +151,7 @@ func (c Commands) CountCreateGoroutine() int {
 // CountStopGoroutine counts total number of StopGoroutine commands.
 func (c Commands) CountStopGoroutine() int {
 	var count int
-	for _, cmd := range c {
+	for _, cmd := range c.cmds {
 		if cmd.Command == CmdStop {
 			count++
 		}
@@ -142,7 +162,7 @@ func (c Commands) CountStopGoroutine() int {
 // CountSendToChannel counts total number of SendToChannel commands.
 func (c Commands) CountSendToChannel() int {
 	var count int
-	for _, cmd := range c {
+	for _, cmd := range c.cmds {
 		if cmd.Command == CmdSend {
 			count++
 		}

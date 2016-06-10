@@ -24,7 +24,7 @@ func Filter(ch <-chan int, out chan<- int, prime int) {
 func main() {
 	ch := make(chan int)
 	go Generate(ch)
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 20; i++ {
 		prime := <-ch
 		fmt.Println(prime)
 		out := make(chan int)

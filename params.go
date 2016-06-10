@@ -10,22 +10,28 @@ type Params struct {
 	AutoAngle      bool    `json:"autoAngle"`
 }
 
-func GuessParams(cmds Commands) *Params {
-	var (
-		goroutines int
-	)
-	for _, cmd := range cmds {
+func GuessParams(c Commands) *Params {
+	goroutines := make(map[int]int) // map[depth]number
+	var totalG int
+
+	for _, cmd := range c.cmds {
+		depth := c.gd[cmd.Name]
 		if cmd.Command == CmdCreate {
-			goroutines++
+			totalG++
+			goroutines[depth]++
 		}
 	}
 
-	return &Params{
-		Angle:          360.0 / float64(goroutines-1),
-		AngleSecond:    360.0 / float64(goroutines-1),
-		Caps:           goroutines < 5, // value from head
-		Distance:       80,
-		DistanceSecond: 20,
-		AutoAngle:      false,
+	params := &Params{
+		Angle:    360.0 / float64(goroutines[1]),
+		Caps:     totalG < 5, // value from head
+		Distance: 80,
 	}
+
+	if gs, ok := goroutines[2]; ok {
+		params.AngleSecond = 360.0 / float64(gs/goroutines[1])
+		params.DistanceSecond = 20
+	}
+
+	return params
 }
