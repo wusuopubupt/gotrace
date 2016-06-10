@@ -1,4 +1,4 @@
-var scene, camera, renderer, controls, orbit;
+var scene, camera, renderer, controls, orbit, trace;
 
 init();
 animate();
@@ -86,6 +86,15 @@ function keydown(event) {
 	switch (event.which) {
 		case 80: // 'P' - (Un)Pause autoRotate
 			toggleAutoRotate();
+			break;
+		case 82: // 'R' - Reset
+			trace.resetTime();
+			break;
+		case 83: // 'S' - Slower
+			trace.slowdown();
+			break;
+		case 70: // 'F' - Faster
+			trace.speedup();
 			break;
 	}
 }

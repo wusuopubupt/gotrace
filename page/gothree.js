@@ -328,21 +328,6 @@ GoThree.Trace = function() {
 		return "";
 	};
 
-	// Keydown implements some internal key handling
-	this.Keydown = function(event) {
-		switch (event.which) {
-			case 82: // 'R' - Reset
-				this.resetTime();
-				break;
-			case 83: // 'S' - Slower
-				this.slowdown();
-				break;
-			case 70: // 'F' - Faster
-				this.speedup();
-				break;
-		}
-	};
-
 	// onControlsChanged runs when controls/camera position is changed.
 	this.onControlsChanged = function(controls) {
 		_cam_position = controls.position;
