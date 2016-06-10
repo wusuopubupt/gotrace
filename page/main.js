@@ -1,6 +1,21 @@
 var scene, camera, renderer, controls, orbit, trace;
 
+// leap motion helpers
+var baseBoneRotation = ( new THREE.Quaternion ).setFromEuler( new THREE.Euler( 0, 0, Math.PI / 2 ) );
+var armMeshes = [];
+var boneMeshes = [];
+
 init();
+//Leap.loop( {background: false}, leapAnimate ).connect();
+Leap.loop()
+	.use('boneHand', {
+		scene: scene,
+		targetEl: document.body,
+		boneScale: 1/20,
+		jointScale: 1/20,
+		arm: false
+	});
+
 animate();
 
 function init() {
@@ -49,7 +64,7 @@ function init() {
 	renderer.setClearColor( '#1D1F17', 1);
 
 	// leap camera controls
-	controls = new THREE.LeapMyControls( camera , controller, renderer.domElement );
+	//controls = new THREE.LeapMyControls( camera , controller, renderer.domElement );
 	//controls = new THREE.LeapPointerControls( camera , controller, renderer.domElement );
 
 	// CONTROLS
@@ -70,10 +85,11 @@ function init() {
 }
 
 function animate() {
+
 	if (orbit.autoRotate) {
 		orbit.update();
 	};
-	controls.update();
+	//controls.update();
 	trace.animate();
 
 	requestAnimationFrame(animate);
@@ -101,4 +117,42 @@ function keydown(event) {
 
 function toggleAutoRotate() {
 	orbit.autoRotate = !orbit.autoRotate;
+}
+
+function leapAnimate( frame ) {
+	var countBones = 0;
+	var countArms = 0;
+	armMeshes.forEach( function( item ) { scene.remove( item ) } );
+	boneMeshes.forEach( function( item ) { scene.remove( item ) } );
+	for ( var hand of frame.hands ) {
+		for ( var finger of hand.fingers ) {
+			for ( var bone of finger.bones ) {
+				if ( countBones++ === 0 ) { continue; }
+				var boneMesh = boneMeshes [ countBones ] || addMesh( boneMeshes );
+				updateMesh( bone, boneMesh );
+			}
+		}
+		var arm = hand.arm;
+		var armMesh = armMeshes [ countArms++ ] || addMesh( armMeshes );
+		updateMesh( arm, armMesh );
+		armMesh.scale.set( arm.width / 4, arm.width / 2, arm.length );
+	}
+
+	animate();
+}
+
+function addMesh( meshes ) {
+	var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+	var material = new THREE.MeshNormalMaterial();
+	var mesh = new THREE.Mesh( geometry, material );
+	meshes.push( mesh );
+	return mesh;
+}
+
+function updateMesh( bone, mesh ) {
+	mesh.position.fromArray( bone.center() );
+	mesh.setRotationFromMatrix( ( new THREE.Matrix4 ).fromArray( bone.matrix() ) );
+	mesh.quaternion.multiply( baseBoneRotation );
+	mesh.scale.set( bone.width, bone.width, bone.length );
+	scene.add( mesh );
 }
