@@ -1,4 +1,4 @@
-var scene, camera, renderer, controls;
+var scene, camera, renderer, controls, orbit;
 
 init();
 animate();
@@ -22,6 +22,7 @@ function init() {
 	//camera = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, -1000, 2000 );
 	camera = new THREE.PerspectiveCamera(75, width / height, 1, 1000 );
 	camera.position.z = 150;
+
 	camera.updateProjectionMatrix();
 	
 	mat1 = new THREE.LineBasicMaterial( { color: 0x0000ff, linewidth: 4, } );
@@ -52,13 +53,16 @@ function init() {
 	//controls = new THREE.LeapPointerControls( camera , controller, renderer.domElement );
 
 	// CONTROLS
-	var orbit = new THREE.OrbitControls( camera, renderer.domElement );
+	orbit = new THREE.OrbitControls( camera, renderer.domElement );
+	orbit.autoRotate = true;
+	orbit.autoRotateSpeed = 1.0;
 	orbit.addEventListener( 'change', function() {
 		trace.onControlsChanged(orbit.object);
 	});
 
 	// ADD CUSTOM KEY HANDLERS
 	document.addEventListener("keydown", function(event) {trace.Keydown(event)}, false);
+	document.addEventListener("keydown", function(event) {keydown(event)}, false);
 
 	document.body.appendChild( renderer.domElement );
 
@@ -66,6 +70,9 @@ function init() {
 }
 
 function animate() {
+	if (orbit.autoRotate) {
+		orbit.update();
+	};
 	controls.update();
 	trace.animate();
 
@@ -73,4 +80,16 @@ function animate() {
 	stats.begin();
 	renderer.render(scene, camera);
     stats.end();
+}
+
+function keydown(event) {
+	switch (event.which) {
+		case 80: // 'P' - (Un)Pause autoRotate
+			toggleAutoRotate();
+			break;
+	}
+}
+
+function toggleAutoRotate() {
+	orbit.autoRotate = !orbit.autoRotate;
 }
