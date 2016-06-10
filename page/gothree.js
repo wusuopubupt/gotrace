@@ -122,10 +122,19 @@ GoThree.Trace = function() {
 					this._cmd_create_channel(cmd.name, cmd.goroutine);
 				break;
 				case 'send to channel':
+					console.log("send to channel");
 					this._cmd_send_to_channel(cmd.ch, cmd.from, cmd.to, cmd.value, cmd.duration);
 				break;
 				case 'stop goroutine':
 					this._cmd_stop_goroutine(cmd.name);
+				break;
+				case 'block goroutine':
+					console.log(cmd.t + ": Blocking goroutine"+cmd.name)
+					this._cmd_block_goroutine(cmd.name);
+				break;
+				case 'unblock goroutine':
+					console.log(cmd.t + ": Unblocking goroutine"+cmd.name)
+					this._cmd_unblock_goroutine(cmd.name);
 				break;
 			}
 			_step++
@@ -139,11 +148,8 @@ GoThree.Trace = function() {
 		// grow existing goroutines along the time axis
 		for (var i = 0; i < _goroutines.length; i++) {
 			var geom = _goroutines[i].line.geometry;
-			var len = geom.vertices.length - 1;
-			var end = geom.vertices[len];
-			var end2 = new THREE.Vector3( end.x, end.y - 1/_speed, end.z );
-			geom.colors.push(new THREE.Color(0, 0, 1));
-			geom.vertices.push( end2, end);
+			var end = geom.vertices[1];
+			end.y -= 1/_speed;
 			geom.verticesNeedUpdate = true;
 		};
 	};
@@ -169,12 +175,10 @@ GoThree.Trace = function() {
 		// create new line
 		var geom = new THREE.Geometry();
 		var start = new THREE.Vector3( x, y, z );
-		var end = new THREE.Vector3( x, y - 10, z );
+		var end = new THREE.Vector3( x, y, z );
 		geom.vertices.push( start, end );
-		geom.colors[0] = new THREE.Color(0, 1, 0);
-		geom.colors[1] = new THREE.Color(0, 0, 1);
-		var mat = new THREE.LineBasicMaterial( { color: 0x00ff00, linewidth: width, vertexColors: THREE.VertexColors } );
-		goroutine.line = new THREE.LineSegments(geom, mat);
+		var mat = new THREE.LineBasicMaterial( { color: 'blue', linewidth: 2 } );
+		goroutine.line = new THREE.Line(geom, mat);
 
 		// create link with parent line
 		if (parent != undefined) {
@@ -428,5 +432,29 @@ GoThree.Trace = function() {
 		sphere.position.y = pos.y;
 		sphere.position.z = pos.z;
 		_scene.add( sphere );
+	};
+
+	this._cmd_block_goroutine = function(name) {
+		this._change_g_color(name, "gray", 1);
+	};
+
+	this._cmd_unblock_goroutine = function(name) {
+		this._change_g_color(name, "blue", 2);
+	};
+
+	this._change_g_color = function(name, color, width) {
+		var g = _goroutines.find({name: name});
+		if (g === undefined) return;
+
+		var og = g.line.geometry; // original geometry
+		var oe = og.vertices[1]; // original end
+
+		var geom = new THREE.Geometry();
+		var start = new THREE.Vector3( oe.x, oe.y, oe.z );
+		var end = new THREE.Vector3( oe.x, oe.y, oe.z );
+		geom.vertices.push(start, end);
+		var mat = new THREE.LineBasicMaterial( { color: color, linewidth: width } );
+		g.line = new THREE.Line(geom, mat);
+		_scene.add( g.line );
 	};
 };
