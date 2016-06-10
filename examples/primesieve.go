@@ -1,9 +1,13 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 func Generate(ch chan<- int) {
 	for i := 2; ; i++ {
+		time.Sleep(10 * time.Millisecond)
 		ch <- i
 	}
 }
