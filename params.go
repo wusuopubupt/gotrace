@@ -14,6 +14,7 @@ func GuessParams(c Commands) *Params {
 	goroutines := make(map[int]int) // map[depth]number
 	var totalG int
 
+	// calculate number of goroutines in each depth level
 	for _, cmd := range c.cmds {
 		depth := c.gd[cmd.Name]
 		if cmd.Command == CmdCreate {
@@ -22,8 +23,14 @@ func GuessParams(c Commands) *Params {
 		}
 	}
 
+	// special case for simple programs
+	angle := 360.0 / float64(goroutines[1])
+	if goroutines[1] < 3 {
+		angle = 60.0
+	}
+
 	params := &Params{
-		Angle:    360.0 / float64(goroutines[1]),
+		Angle:    angle,
 		Caps:     totalG < 5, // value from head
 		Distance: 80,
 	}
