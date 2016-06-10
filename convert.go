@@ -113,7 +113,7 @@ func ConvertEvents(events []*trace.Event) (Commands, error) {
 	// insert stop main
 	// TODO: figure out why it's not in the trace
 	lastTs := c[len(c)-1].Time
-	c.StopGoroutine(lastTs+1000, "", 1)
+	c.StopGoroutine(lastTs+10, "", 1)
 
 	return c, nil
 }
