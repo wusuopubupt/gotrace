@@ -122,19 +122,19 @@ GoThree.Trace = function() {
 					this._cmd_create_channel(cmd.name, cmd.goroutine);
 				break;
 				case 'send to channel':
-					console.log("send to channel");
 					this._cmd_send_to_channel(cmd.ch, cmd.from, cmd.to, cmd.value, cmd.duration);
 				break;
 				case 'stop goroutine':
 					this._cmd_stop_goroutine(cmd.name);
 				break;
 				case 'block goroutine':
-					console.log(cmd.t + ": Blocking goroutine"+cmd.name)
 					this._cmd_block_goroutine(cmd.name);
 				break;
 				case 'unblock goroutine':
-					console.log(cmd.t + ": Unblocking goroutine"+cmd.name)
 					this._cmd_unblock_goroutine(cmd.name);
+				break;
+				case 'sleep goroutine':
+					this._cmd_sleep_goroutine(cmd.name);
 				break;
 			}
 			_step++
@@ -440,6 +440,10 @@ GoThree.Trace = function() {
 
 	this._cmd_unblock_goroutine = function(name) {
 		this._change_g_color(name, "blue", 2);
+	};
+
+	this._cmd_sleep_goroutine = function(name) {
+		this._change_g_color(name, "lime", 2);
 	};
 
 	this._change_g_color = function(name, color, width) {

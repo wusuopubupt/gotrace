@@ -90,6 +90,11 @@ func ConvertEvents(events []*trace.Event) (Commands, error) {
 				fmt.Println("[DD] Block:", ev.Ts, ev.G, ev.Args)
 			}
 			c.BlockGoroutine(ev.Ts, ev.G)
+		case trace.EvGoSleep:
+			if debug {
+				fmt.Println("[DD] Sleep:", ev.Ts, ev.G, ev.Args)
+			}
+			c.SleepGoroutine(ev.Ts, ev.G)
 		case trace.EvGoStop:
 			if debug {
 				fmt.Println(ev.Ts, "GoStop:", ev.G)

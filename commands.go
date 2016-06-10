@@ -13,6 +13,7 @@ const (
 	CmdSend    = "send to channel"
 	CmdBlock   = "block goroutine"
 	CmdUnblock = "unblock goroutine"
+	CmdSleep   = "sleep goroutine"
 )
 
 // Command is a common structure for all
@@ -90,6 +91,15 @@ func (c *Commands) UnblockGoroutine(ts int64, gid uint64) {
 	cmd := &Command{
 		Time:    ts,
 		Command: CmdUnblock,
+		Name:    fmt.Sprintf("#%d", gid),
+	}
+	*c = append(*c, cmd)
+}
+
+func (c *Commands) SleepGoroutine(ts int64, gid uint64) {
+	cmd := &Command{
+		Time:    ts,
+		Command: CmdSleep,
 		Name:    fmt.Sprintf("#%d", gid),
 	}
 	*c = append(*c, cmd)
