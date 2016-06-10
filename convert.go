@@ -27,6 +27,7 @@ func ConvertEvents(events []*trace.Event) (Commands, error) {
 				c.StartGoroutine(ev.Ts, ev.Stk[0].Fn, ev.G, lastG)
 			}
 			lastG = ev.G
+			c.UnblockGoroutine(ev.Ts, lastG)
 		case trace.EvGoCreate:
 			if len(ev.Stk) > 0 {
 				if strings.HasPrefix(ev.Stk[0].Fn, "runtime") {
@@ -48,10 +49,10 @@ func ConvertEvents(events []*trace.Event) (Commands, error) {
 				}
 			}
 			lastG = ev.Args[0]
+			c.UnblockGoroutine(ev.Ts, lastG)
 			if debug {
 				fmt.Println(ev.Ts, "GoUnblock: set lastG to", lastG, ev.Args)
 			}
-			c.UnblockGoroutine(ev.Ts, lastG)
 		case trace.EvGoEnd:
 			if debug {
 				fmt.Println(ev.Ts, "GoEnd:", ev.G)
@@ -81,29 +82,14 @@ func ConvertEvents(events []*trace.Event) (Commands, error) {
 				fmt.Println(ev.Ts, "GoGC...", ev.Type, ev.Args)
 			}
 			lastG = 1
-		case trace.EvGoBlockSelect:
+		case trace.EvGoSched, trace.EvGoPreempt,
+			trace.EvGoBlock, trace.EvGoBlockSelect, trace.EvGoBlockSend, trace.EvGoBlockRecv,
+			trace.EvGoBlockSync, trace.EvGoBlockCond, trace.EvGoBlockNet,
+			trace.EvGoSysBlock:
 			if debug {
-				fmt.Println("[DD] BlockSelect:", ev.Ts, ev.G, ev.Args)
+				fmt.Println("[DD] Block:", ev.Ts, ev.G, ev.Args)
 			}
 			c.BlockGoroutine(ev.Ts, ev.G)
-		case trace.EvGoBlockSend:
-			if debug {
-				fmt.Println("[DD] BlockSend:", ev.Ts, ev.G, ev.Args)
-			}
-			c.BlockGoroutine(ev.Ts, ev.G)
-		case trace.EvGoBlockRecv:
-			if debug {
-				fmt.Println("[DD] BlockRecv:", ev.Ts, ev.G, ev.Args)
-			}
-			c.BlockGoroutine(ev.Ts, ev.G)
-			/*
-				case trace.EvGoSched, trace.EvGoPreempt,
-					trace.EvGoSleep, trace.EvGoBlock, trace.EvGoBlockSelect, trace.EvGoBlockSend, trace.EvGoBlockRecv,
-					trace.EvGoBlockSync, trace.EvGoBlockCond, trace.EvGoBlockNet,
-					trace.EvGoSysBlock:
-					fmt.Println("Ev:", ev.Type, ev.G, ev.Args)
-					//lastG = ev.G
-			*/
 		case trace.EvGoStop:
 			if debug {
 				fmt.Println(ev.Ts, "GoStop:", ev.G)
