@@ -38,13 +38,13 @@ GoThree.Trace = function() {
         "go_cap":  "#424242",
     };
 	var _colors3 = {
-        "send_arrow":  "#71EAEF",
-        "send_value":  "#71EAEF",
-        "go_normal":  "#FFFFFF",
-        "go_link":  "#FFFFFF",
-        "go_blocked":  "#FF3D2E",
-        "go_sleep":  "#FF8E7E",
-        "go_cap":  "#9DBDC6",
+        "send_arrow":  "#00D6DD",
+        "send_value":  "#00D6DD",
+        "go_normal":  "#D4FF00",
+        "go_link":  "#D4FF00",
+        "go_blocked":  "#B00000",
+        "go_sleep":  "#6C8200",
+        "go_cap":  "#D4FF00",
     };
 
 	var _colors = _colors3;

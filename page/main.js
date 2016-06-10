@@ -45,7 +45,7 @@ function init() {
 	// RENDERER
 	renderer = new THREE.WebGLRenderer({ alpha: true });
 	renderer.setSize( width, height );
-	renderer.setClearColor( '#272F32', 1);
+	renderer.setClearColor( '#1D1F17', 1);
 
 	// leap camera controls
 	controls = new THREE.LeapMyControls( camera , controller, renderer.domElement );
