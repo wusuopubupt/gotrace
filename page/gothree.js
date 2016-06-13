@@ -457,7 +457,7 @@ GoThree.Trace = function() {
 	};
 
 	this._cmd_block_goroutine = function(name) {
-		this._change_g_color(name, _colors["go_blocked"], 1);
+		this._change_g_color(name, _colors["go_blocked"], 2);
 	};
 
 	this._cmd_unblock_goroutine = function(name) {
@@ -465,7 +465,7 @@ GoThree.Trace = function() {
 	};
 
 	this._cmd_sleep_goroutine = function(name) {
-		this._change_g_color(name, _colors["go_sleep"], 3);
+		this._change_g_color(name, _colors["go_sleep"], 2);
 	};
 
 	this._change_g_color = function(name, color, width) {
