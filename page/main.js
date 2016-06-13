@@ -1,4 +1,4 @@
-var scene, camera, renderer, controls, orbit, trace;
+var scene, camera, renderer, controls, orbit, trace, cameraControls;
 
 // leap motion helpers
 var baseBoneRotation = ( new THREE.Quaternion ).setFromEuler( new THREE.Euler( 0, 0, Math.PI / 2 ) );
@@ -6,13 +6,14 @@ var armMeshes = [];
 var boneMeshes = [];
 
 init();
-//Leap.loop( {background: false}, leapAnimate ).connect();
+Leap.loop(function(frame){
+  // maybe some modifications to your scene
+  // ...
 
-Leap.loop()
-	.use('boneHand', {
-		scene: scene,
-		arm: false
-	})
+  cameraControls.update(frame); // rotating, zooming & panning
+  trace.animate();
+  renderer.render(scene, camera);
+});
 
 animate();
 
@@ -70,17 +71,40 @@ function init() {
 	// leap camera controls
 	//controls = new THREE.LeapMyControls( camera , controller, renderer.domElement );
 	//controls = new THREE.LeapPointerControls( camera , controller, renderer.domElement );
+	cameraControls = new THREE.LeapCameraControls(camera);
+	cameraControls.panEnabled      = true;
+	cameraControls.panSpeed        = 1.0;
+	cameraControls.panHands        = 2;
+	cameraControls.panFingers      = [6,12];
+	cameraControls.panRightHanded  = true; // right-handed
+	cameraControls.panHandPosition = true; // palm position used
+	cameraControls.panStabilized   = true; // stabilized palm position used
+	
+	cameraControls.rotateEnabled         = true;
+	cameraControls.rotateHands           = 1;
+	cameraControls.rotateSpeed           = 0.8;
+	cameraControls.rotateFingers         = [4, 5];
+	cameraControls.rotateRightHanded     = true;
+	cameraControls.rotateHandPosition    = false;
+	cameraControls.rotateStabilized      = false;
+
+	cameraControls.zoomEnabled         = true;
+	cameraControls.zoomHands           = [1,2];
+	cameraControls.zoomSpeed           = 1;
+	cameraControls.zoomFingers         = [2, 3];
+	cameraControls.zoomRightHanded     = true;
+	cameraControls.zoomHandPosition    = true;
+	cameraControls.zoomStabilized      = true;
 
 	// CONTROLS
 	orbit = new THREE.OrbitControls( camera, renderer.domElement );
-	orbit.autoRotate = true;
+	orbit.autoRotate = false;
 	orbit.autoRotateSpeed = 1.0;
 	orbit.addEventListener( 'change', function() {
 		trace.onControlsChanged(orbit.object);
 	});
 
 	// ADD CUSTOM KEY HANDLERS
-	document.addEventListener("keydown", function(event) {trace.Keydown(event)}, false);
 	document.addEventListener("keydown", function(event) {keydown(event)}, false);
 
 	document.body.appendChild( renderer.domElement );
