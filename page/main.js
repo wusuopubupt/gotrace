@@ -11,6 +11,7 @@ Leap.loop(function(frame){
   // ...
 
   cameraControls.update(frame); // rotating, zooming & panning
+  trace.onControlsChanged(camera);
   trace.animate();
   renderer.render(scene, camera);
 });
@@ -86,12 +87,12 @@ function init() {
 	cameraControls.rotateFingers         = [4, 5];
 	cameraControls.rotateRightHanded     = true;
 	cameraControls.rotateHandPosition    = false;
-	cameraControls.rotateStabilized      = false;
+	cameraControls.rotateStabilized      = true;
 
-	cameraControls.zoomEnabled         = true;
-	cameraControls.zoomHands           = [1,2];
+	cameraControls.zoomEnabled         = false;
+	cameraControls.zoomHands           = 2;
 	cameraControls.zoomSpeed           = 1;
-	cameraControls.zoomFingers         = [2, 3];
+	cameraControls.zoomFingers         = [6, 12];
 	cameraControls.zoomRightHanded     = true;
 	cameraControls.zoomHandPosition    = true;
 	cameraControls.zoomStabilized      = true;
