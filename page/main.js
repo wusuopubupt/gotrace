@@ -7,18 +7,18 @@ var boneMeshes = [];
 
 init();
 //Leap.loop( {background: false}, leapAnimate ).connect();
+
 Leap.loop()
 	.use('boneHand', {
 		scene: scene,
-		targetEl: document.body,
-		boneScale: 1/20,
-		jointScale: 1/20,
 		arm: false
-	});
+	})
 
 animate();
 
 function init() {
+	var scale = 5;
+
 	// STATS
 	stats = new Stats();
 	stats.setMode( 0 ); // 0: fps, 1: ms, 2: mb
@@ -34,15 +34,15 @@ function init() {
 	width = window.innerWidth;
 	height = window.innerHeight;
 	var center = new THREE.Vector3(60, -50, -10);
-	//camera = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, -1000, 2000 );
-	camera = new THREE.PerspectiveCamera(75, width / height, 1, 1000 );
-	camera.position.z = 150;
-
+	//camera = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, -1000*scale, 2000*scale );
+	camera = new THREE.PerspectiveCamera(75, width / height, 1, 1000 * scale );
+	camera.position.z = 100 * scale;
+	camera.position.y = 50 * scale;
 	camera.updateProjectionMatrix();
 	
 	mat1 = new THREE.LineBasicMaterial( { color: 0x0000ff, linewidth: 4, } );
 	trace = new GoThree.Trace();
-	trace.init(scene, data, params);
+	trace.init(scene, data, params, scale);
 	/*
 	trace.init(scene, data, {
 		allCaps: true,
@@ -62,6 +62,10 @@ function init() {
 	renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, });
 	renderer.setSize( width, height );
 	renderer.setClearColor( '#1D1F17', 1);
+
+	// light for hand
+	var light = new THREE.AmbientLight( 0x505050 ); // soft white light
+	scene.add( light );
 
 	// leap camera controls
 	//controls = new THREE.LeapMyControls( camera , controller, renderer.domElement );
