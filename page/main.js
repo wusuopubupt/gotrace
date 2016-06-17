@@ -141,6 +141,12 @@ function keydown(event) {
 		case 70: // 'F' - Faster
 			trace.speedup();
 			break;
+		case 187: // '+' - IncWidth
+			trace.incWidth();
+			break;
+		case 189: // '-' - DecWidth
+			trace.decWidth();
+			break;
 	}
 }
 
