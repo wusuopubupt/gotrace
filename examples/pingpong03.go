@@ -6,7 +6,7 @@ func main() {
 	var Ball int
 	table := make(chan int)
 
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 36; i++ {
 		// this sleep is added to more or less preserve an order
 		// of the goroutines id on creation
 		time.Sleep(10 * time.Millisecond)
@@ -14,7 +14,6 @@ func main() {
 	}
 
 	table <- Ball
-	time.Sleep(1 * time.Second)
 	<-table
 }
 
