@@ -86,14 +86,15 @@ func (c *Commands) StopGoroutine(ts int64, name string, gid uint64) {
 	c.cmds = append(c.cmds, cmd)
 }
 
-func (c *Commands) ChanSend(ts int64, cid, fgid, tgid, val uint64) {
+func (c *Commands) ChanSend(send_ts, recv_ts int64, cid, fgid, tgid, val uint64) {
 	cmd := &Command{
-		Time:    ts,
-		Command: CmdSend,
-		From:    fmt.Sprintf("#%d", fgid),
-		To:      fmt.Sprintf("#%d", tgid),
-		Channel: fmt.Sprintf("#%d", cid),
-		Value:   fmt.Sprintf("%d", val),
+		Time:     send_ts,
+		Command:  CmdSend,
+		From:     fmt.Sprintf("#%d", fgid),
+		To:       fmt.Sprintf("#%d", tgid),
+		Channel:  fmt.Sprintf("#%d", cid),
+		Value:    fmt.Sprintf("%d", val),
+		Duration: recv_ts - send_ts,
 	}
 	c.cmds = append(c.cmds, cmd)
 }
