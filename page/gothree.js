@@ -128,6 +128,7 @@ GoThree.Trace = function() {
 	// Update timing related calculations
 	this._updateTimings = function() {
 		_run_time = _data[_data.length-1].t;
+		// FIXME: msecs_per_tick is more proper name
 		_tick_per_sec = _total_time/_run_time;
 	};
 
@@ -260,14 +261,22 @@ GoThree.Trace = function() {
 		var start = s.line.geometry.vertices[1];
 		var end = e.line.geometry.vertices[1];
 
+		var duration = 50; // default: 0.05s
+		if (dur !== undefined) {
+			duration = dur / (1000 * 1000); // -> nanoseconds -> milliseconds
+		}
+		console.log("Duration: " + duration + " ms")
+		console.log("TicksPerSec: " + _tick_per_sec)
+		console.log("TotalTime, RunTime: " , _total_time, _run_time)
+
 		// target end is on the same Y axis as the start
-		var target = { x: end.x, y: start.y, z: end.z };
-		var targetV = new THREE.Vector3(end.x, start.y, end.z);
+		var target = { x: end.x, y: start.y-duration, z: end.z };
+		var targetV = new THREE.Vector3(end.x, end.y-duration, end.z);
 
 		// First, create line that will be animated
 		// (as ArrowHelper can't be animated)
 		var head = { x: start.x, y: start.y, z: start.z };
-		var tail = { x: start.x, y: start.y, z: start.z };
+		var tail = { x: start.x, y: end.y, z: start.z };
 		var geom = new THREE.Geometry();
 		geom.vertices.push(head);
 		geom.vertices.push(tail);
@@ -277,12 +286,10 @@ GoThree.Trace = function() {
 		_scene.add(line); 
 
 		// create tween for line animation
-		var duration = 500; // default: 0.5s
-		if (dur !== undefined) {
-			duration = dur / (1000 * 1000); // nanoseconds -> milliseconds
-		}
-		console.log("Duration: " + duration + " ms")
-		var tween = new TWEEN.Tween(tail).to(target, duration+_distance*(_speed-1));
+		var d = duration/1000000*_tick_per_sec;
+		var d2 = Math.sqrt(d*d + _distance*_distance);
+		console.log("Tween duration: " + d2, "time: " + d2 * _speed);
+		var tween = new TWEEN.Tween(tail).to(target, d2 * _speed * 2);
 		tween.easing(TWEEN.Easing.Cubic.InOut);
 
 		// create text with value
