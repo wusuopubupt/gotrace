@@ -19,7 +19,7 @@ Leap.loop(function(frame){
 animate();
 
 function init() {
-	var scale = 5;
+	var scale = 1;
 
 	// STATS
 	stats = new Stats();
