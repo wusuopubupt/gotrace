@@ -6,10 +6,11 @@ import (
 )
 
 func main() {
-	ch := make(chan int, 10)
+	N := 1
+	ch := make(chan int, N)
 
 	go func(ch chan int) {
-		for i := 0; i < 10; i++ {
+		for i := 0; i < N; i++ {
 			ch <- i
 		}
 		close(ch)

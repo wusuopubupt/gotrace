@@ -14,6 +14,10 @@ func ConvertEvents(events []*trace.Event) (Commands, error) {
 	c := NewCommands()
 
 	sends := list.New()
+	gs := make(map[uint64]bool)
+	isIgnored := func(g uint64) bool {
+		return gs[g] == false
+	}
 
 	debug := os.Getenv("GOTRACE_DEBUG") == "1"
 	var lastG uint64
@@ -24,7 +28,11 @@ func ConvertEvents(events []*trace.Event) (Commands, error) {
 				fmt.Println(ev.Ts, "GoStart:", ev.G, "from", lastG, ev.Args)
 			}
 			if ev.G == 1 && lastG == 0 {
+				gs[ev.G] = true
 				c.StartGoroutine(ev.Ts, ev.Stk[0].Fn, ev.G, lastG)
+			}
+			if isIgnored(ev.G) {
+				break
 			}
 			lastG = ev.G
 			c.UnblockGoroutine(ev.Ts, lastG)
@@ -35,12 +43,16 @@ func ConvertEvents(events []*trace.Event) (Commands, error) {
 						break
 					}
 				}
+				gs[ev.G] = true
 				c.StartGoroutine(ev.Ts, ev.Stk[0].Fn, ev.Args[0], ev.G)
 				if debug {
 					fmt.Println(ev.Ts, "GoCreate:", ev.Args[0], "from", ev.G)
 				}
 			}
 		case trace.EvGoUnblock:
+			if isIgnored(ev.G) {
+				break
+			}
 			if len(ev.Stk) > 0 {
 				if strings.HasPrefix(ev.Stk[0].Fn, "runtime") {
 					if ev.Stk[0].Fn != "runtime.main" {
@@ -86,6 +98,9 @@ func ConvertEvents(events []*trace.Event) (Commands, error) {
 			trace.EvGoBlock, trace.EvGoBlockSelect, trace.EvGoBlockSend, trace.EvGoBlockRecv,
 			trace.EvGoBlockSync, trace.EvGoBlockCond, trace.EvGoBlockNet,
 			trace.EvGoSysBlock:
+			if isIgnored(ev.G) {
+				break
+			}
 			if debug {
 				fmt.Println("[DD] Block:", ev.Ts, ev.G, ev.Args)
 			}
@@ -93,6 +108,9 @@ func ConvertEvents(events []*trace.Event) (Commands, error) {
 		case trace.EvGoSleep:
 			if debug {
 				fmt.Println("[DD] Sleep:", ev.Ts, ev.G, ev.Args)
+			}
+			if isIgnored(ev.G) {
+				break
 			}
 			c.SleepGoroutine(ev.Ts, ev.G)
 		case trace.EvGoStop:
