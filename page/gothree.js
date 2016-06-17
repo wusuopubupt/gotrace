@@ -50,6 +50,7 @@ GoThree.Trace = function() {
 	var _colors = _colors3;
 
 	var _t = 0;
+	var _scale = 1;
 
 	// total drawing time/length. Actually, main is of length _total_time.
 	var _total_time = 100;
@@ -103,7 +104,8 @@ GoThree.Trace = function() {
 	};
 
 	// Init w/ scene and new data
-	this.init = function(scene, data, params) {
+	this.init = function(scene, data, params, scale) {
+		_scale = scale;
 		_scene = scene;
 		_data = data;
 		_params = params;
@@ -179,7 +181,7 @@ GoThree.Trace = function() {
 		for (var i = 0; i < _goroutines.length; i++) {
 			var geom = _goroutines[i].line.geometry;
 			var end = geom.vertices[1];
-			end.y -= 1/_speed;
+			end.y -= _scale*(1/_speed);
 			geom.verticesNeedUpdate = true;
 		};
 	};
@@ -226,7 +228,7 @@ GoThree.Trace = function() {
 		}
 
 		// create cap text
-		var shapes = THREE.FontUtils.generateShapes(this._goroutine_name(name), { font: "helvetiker", weight: "normal", size: 3 } );
+		var shapes = THREE.FontUtils.generateShapes(this._goroutine_name(name), { font: "helvetiker", weight: "normal", size: 3*_scale } );
 		var geom = new THREE.ShapeGeometry( shapes );
 		var mat = new THREE.MeshBasicMaterial({color: _colors["go_cap"]});
 		var text = new THREE.Mesh( geom, mat );
@@ -285,7 +287,7 @@ GoThree.Trace = function() {
 
 		// create text with value
 		var trace = {};
-		var shapes = THREE.FontUtils.generateShapes(value, { font: "helvetiker", weight: "normal", size: 1 } );
+		var shapes = THREE.FontUtils.generateShapes(value, { font: "helvetiker", weight: "normal", size: 1.5*_scale } );
 		var geom = new THREE.ShapeGeometry( shapes );
 		var mat = new THREE.MeshBasicMaterial({color: _colors["send_value"]});
 		trace.text = new THREE.Mesh( geom, mat );
@@ -389,6 +391,9 @@ GoThree.Trace = function() {
 				_distanceShift += 0.2;
 			}
 
+			// scale
+			distance *= _scale;
+
 			// calculate parent's angle
 			var initAngle = _angleShift;
 			var grandParent = _goroutines.find({name: p.parent});
@@ -452,7 +457,7 @@ GoThree.Trace = function() {
 	};
 
 	this._cmd_block_goroutine = function(name) {
-		this._change_g_color(name, _colors["go_blocked"], 1);
+		this._change_g_color(name, _colors["go_blocked"], 2);
 	};
 
 	this._cmd_unblock_goroutine = function(name) {
@@ -460,7 +465,7 @@ GoThree.Trace = function() {
 	};
 
 	this._cmd_sleep_goroutine = function(name) {
-		this._change_g_color(name, _colors["go_sleep"], 3);
+		this._change_g_color(name, _colors["go_sleep"], 2);
 	};
 
 	this._change_g_color = function(name, color, width) {
