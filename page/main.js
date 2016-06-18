@@ -128,6 +128,7 @@ function animate() {
 }
 
 function keydown(event) {
+	console.log(event.which);
 	switch (event.which) {
 		case 80: // 'P' - (Un)Pause autoRotate
 			toggleAutoRotate();
@@ -146,6 +147,21 @@ function keydown(event) {
 			break;
 		case 189: // '-' - DecWidth
 			trace.decWidth();
+			break;
+		case 48: // '0' - HighlighMode Default
+			trace.highlight("default");
+			break;
+		case 49: // '1' - HighlighMode 1
+			trace.highlight("mode1");
+			break;
+		case 50: // '2' - HighlighMode 2
+			trace.highlight("mode2");
+			break;
+		case 51: // '2' - HighlighMode 3
+			trace.highlight("mode3");
+			break;
+		case 52: // '2' - HighlighMode 4
+			trace.highlight("mode4");
 			break;
 	}
 }

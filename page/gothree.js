@@ -506,4 +506,20 @@ GoThree.Trace = function() {
 		_mats["go_link"].linewidth--;
 		_mats["send_arrow"].linewidth--;
 	};
+
+	_widths = {
+		"default": [2, 2, 2, 2, 2],
+		"mode1": [10, 1, 1, 1, 1],
+		"mode2": [1, 10, 1, 1, 1],
+		"mode3": [1, 1, 10, 1, 1],
+		"mode4": [1, 1, 1, 1, 10],
+	};
+
+	this.highlight = function(mode) {
+		_mats["go_blocked"].linewidth = _widths[mode][0];
+		_mats["go_sleep"].linewidth =  _widths[mode][1];
+		_mats["go_normal"].linewidth =  _widths[mode][2];
+		_mats["go_link"].linewidth =  _widths[mode][3];
+		_mats["send_arrow"].linewidth =  _widths[mode][4];
+	};
 };
