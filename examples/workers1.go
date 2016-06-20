@@ -22,7 +22,7 @@ func pool(wg *sync.WaitGroup, workers, tasks int) {
 	ch := make(chan int)
 
 	for i := 0; i < workers; i++ {
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(1 * time.Millisecond)
 		go worker(ch, wg)
 	}
 
