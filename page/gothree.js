@@ -435,7 +435,10 @@ GoThree.Trace = function() {
 		if (g === undefined) return;
 		if (g.parent !== undefined) {
 			var parent = _goroutines.find({name: g.parent});
-			if (parent === undefined) return;
+			if (parent === undefined) {
+				_goroutines.remove({name: name});
+				return;
+			}
 			var ggeom = g.line.geometry.vertices[1];
 			var pgeom = parent.line.geometry.vertices[1];
 			var start = new THREE.Vector3(ggeom.x, ggeom.y, ggeom.z);
