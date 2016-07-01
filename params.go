@@ -30,9 +30,10 @@ func GuessParams(c Commands) *Params {
 	}
 
 	params := &Params{
-		Angle:    angle,
-		Caps:     totalG < 5, // value from head
-		Distance: 80,
+		Angle:     angle,
+		Caps:      totalG < 5, // value from head
+		Distance:  80,
+		AutoAngle: true,
 	}
 
 	if gs, ok := goroutines[2]; ok {

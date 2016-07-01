@@ -9,11 +9,11 @@ import (
 func worker(ch <-chan int, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for {
-		time.Sleep(10 * time.Millisecond)
 		task, ok := <-ch
 		if !ok {
 			return
 		}
+		time.Sleep(1 * time.Millisecond)
 		fmt.Println("processing task", task)
 	}
 }
@@ -37,6 +37,6 @@ func pool(wg *sync.WaitGroup, workers, tasks int) {
 func main() {
 	var wg sync.WaitGroup
 	wg.Add(36)
-	go pool(&wg, 36, 50)
+	go pool(&wg, 36, 36)
 	wg.Wait()
 }

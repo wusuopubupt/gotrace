@@ -36,13 +36,15 @@ func worker(tasks <-chan int, wg *sync.WaitGroup) {
 		var wg2 sync.WaitGroup
 		wg2.Add(SUBWORKERS)
 		subtasks := make(chan int)
+		go func() {
+			for i := 0; i < SUBTASKS; i++ {
+				task1 := task * i
+				subtasks <- task1
+			}
+		}()
 		for i := 0; i < SUBWORKERS; i++ {
 			time.Sleep(1 * time.Millisecond)
 			go subworker(subtasks, &wg2)
-		}
-		for i := 0; i < SUBTASKS; i++ {
-			task1 := task * i
-			subtasks <- task1
 		}
 		close(subtasks)
 		wg2.Wait()
