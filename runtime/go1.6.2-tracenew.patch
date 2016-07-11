@@ -21,7 +21,7 @@ index 11f9aba..ff28950 100644
 +	EvGoRecv:         {"GoRecv", true, []string{}},
  }
 diff --git a/src/runtime/chan.go b/src/runtime/chan.go
-index 5be18be..4966723 100644
+index 5be18be..b3dd1b0 100644
 --- a/src/runtime/chan.go
 +++ b/src/runtime/chan.go
 @@ -23,6 +23,7 @@ const (
@@ -130,14 +130,14 @@ index 5be18be..4966723 100644
  	// someone woke us up
  	if mysg != gp.waiting {
  		throw("G waiting list is corrupted")
-@@ -507,6 +534,7 @@ func recv(c *hchan, sg *sudog, ep unsafe.Pointer, unlockf func()) {
- 			// ep points to our own stack or heap, so nothing
+@@ -508,6 +535,7 @@ func recv(c *hchan, sg *sudog, ep unsafe.Pointer, unlockf func()) {
  			// special (ala sendDirect) needed here.
  			typedmemmove(c.elemtype, ep, sg.elem)
-+			traceGoRecv(sg.eventid, c.id, elem2int(ep))
  		}
++		traceGoRecv(sg.eventid, c.id, elem2int(ep))
  	} else {
  		// Queue is full.  Take the item at the
+ 		// head of the queue.  Make the sender enqueue
 @@ -526,6 +554,7 @@ func recv(c *hchan, sg *sudog, ep unsafe.Pointer, unlockf func()) {
  		}
  		// copy data from sender to queue
@@ -173,25 +173,27 @@ index 917fe89..02e7858 100644
  
  type gcstats struct {
 diff --git a/src/runtime/select.go b/src/runtime/select.go
-index b6c3fea..ed98c87 100644
+index b6c3fea..15fbcfc 100644
 --- a/src/runtime/select.go
 +++ b/src/runtime/select.go
-@@ -486,6 +486,7 @@ bufrecv:
- 	if cas.elem != nil {
- 		typedmemmove(c.elemtype, cas.elem, qp)
+@@ -383,6 +383,7 @@ loop:
+ 			c.recvq.enqueue(sg)
+ 
+ 		case caseSend:
++			traceGoSend(sg.eventid, c.id, elem2int(sg.elem))
+ 			c.sendq.enqueue(sg)
+ 		}
  	}
-+	traceGoRecv(666, c.id, elem2int(cas.elem))
- 	memclr(qp, uintptr(c.elemsize))
- 	c.recvx++
- 	if c.recvx == c.dataqsiz {
-@@ -506,6 +507,7 @@ bufsend:
- 		msanread(cas.elem, c.elemtype.size)
- 	}
- 	typedmemmove(c.elemtype, chanbuf(c, c.sendx), cas.elem)
-+	traceGoSend(666, c.id, elem2int(cas.elem))
- 	c.sendx++
- 	if c.sendx == c.dataqsiz {
- 		c.sendx = 0
+@@ -423,6 +424,9 @@ loop:
+ 				c.sendq.dequeueSudoG(sglist)
+ 			} else {
+ 				c.recvq.dequeueSudoG(sglist)
++				if sg != nil {
++					traceGoRecv(sg.eventid, sg.cid, elem2int(k.elem))
++				}
+ 			}
+ 		}
+ 		sgnext = sglist.waitlink
 diff --git a/src/runtime/trace.go b/src/runtime/trace.go
 index 805c34f..6f1c5ed 100644
 --- a/src/runtime/trace.go
