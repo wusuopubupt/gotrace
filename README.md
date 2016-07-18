@@ -17,10 +17,10 @@ First, install gotrace:
     
 ### 1. Prepare your program
 
-Theoretically, gotrace should do all the magic itself and be able to handle any Go program. That's the goal, but at the present moment, if you want to get good/meaninful visualization, you should follow some rules and suggestions.
+Theoretically, gotrace should do all the magic itself and be able to handle any Go program. That's the goal, but at the present moment, if you want to get good/meaningful visualization, you should follow some rules and suggestions.
 
 #### Make it short
-The height of program visualization currently is a fixed value, so any trace fits into the screen heigth. This means, that example running 1 minute will be visualized at different scale from program running 1 second.
+The height of program visualization currently is a fixed value, so any trace fits into the screen height. This means, that example running 1 minute will be visualized at different scale from program running 1 second.
 
 Depending on what you try to see, but rule of thumb is - **the shorter execution time, the better**. See `examples/` dir for good samples that produce nice visualizations.
 
@@ -109,7 +109,7 @@ It should start the browser and render visualization.
 ---
 
 # Appendix A - patching Go locally
-If you really want to play around with gotrace, you may want to patch Go runtime yourself. It will allow you to run gotrace as easy as `gotrace main.go` without all intermediate steps desctibed above.
+If you really want to play around with gotrace, you may want to patch Go runtime yourself. It will allow you to run gotrace as easy as `gotrace main.go` without all intermediate steps described above.
 
 Here are instructions on how to do it (MacOS X and Linux).
 
@@ -137,7 +137,7 @@ or (assuming your PATH set to use /usr/local/go)
 		sudo mv /usr/local/go /usr/local/go-orig
 		sudo ln -nsf /usr/local/go162/go /usr/local/go
 		
-NOTE: return your previuous installation by `sudo ln -nsf /usr/local/go-orig /usr/local/go`
+NOTE: return your previous installation by `sudo ln -nsf /usr/local/go-orig /usr/local/go`
 
 Now, you should be able to run `gotrace example.go` and get the result.
         
