@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"runtime/trace"
 	"sync"
 	"time"
 )
@@ -35,8 +37,10 @@ func pool(wg *sync.WaitGroup, workers, tasks int) {
 }
 
 func main() {
+	trace.Start(os.Stderr)
 	var wg sync.WaitGroup
 	wg.Add(36)
 	go pool(&wg, 36, 36)
 	wg.Wait()
+	trace.Stop()
 }
