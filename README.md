@@ -112,6 +112,12 @@ Now, it's time to run `gotrace` and feed the binary and the trace to produce the
     
 It should start the browser and render visualization.
 
+# Hotkeys
+
+You can use mouse/trackpad to zoom/rotate/pan visualization. On MacOS X you use single tap and move to rotate, double-finger touch to zoom, and double-finger tap and move to pan.
+
+You may also try it with[ Leap Motion controller](https://www.leapmotion.com) for zooming and rotating with hands - switch to **leap** branch.
+
 ---
 
 # Appendix A - patching Go locally
