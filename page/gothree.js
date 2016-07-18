@@ -49,6 +49,19 @@ GoThree.Trace = function() {
 
 	var _colors = _colors3;
 
+	// Predefined materials
+	var _mats = {
+		"go_normal": new THREE.LineBasicMaterial( { color: _colors["go_normal"], linewidth: 5 } ),
+		"go_sleep": new THREE.LineBasicMaterial( { color: _colors["go_sleep"], linewidth: 2 } ),
+		"go_blocked": new THREE.LineBasicMaterial( { color: _colors["go_blocked"], linewidth: 2 } ),
+		"go_link": new THREE.LineBasicMaterial( { color: _colors["go_link"], linewidth: 1, } ),
+		"go_cap": new THREE.MeshBasicMaterial({color: _colors["go_cap"]}),
+		"send_value": new THREE.MeshBasicMaterial({color: _colors["send_value"]}),
+		"send_arrow": new THREE.LineBasicMaterial({color: _colors["send_arrow"]}),
+		"channel": new THREE.MeshBasicMaterial( {color: _colors["channel"]} ),
+	};
+
+
 	var _t = 0;
 	var _scale = 1;
 
@@ -128,6 +141,7 @@ GoThree.Trace = function() {
 	// Update timing related calculations
 	this._updateTimings = function() {
 		_run_time = _data[_data.length-1].t;
+		// FIXME: msecs_per_tick is more proper name
 		_tick_per_sec = _total_time/_run_time;
 	};
 
@@ -209,8 +223,7 @@ GoThree.Trace = function() {
 		var start = new THREE.Vector3( x, y, z );
 		var end = new THREE.Vector3( x, y, z );
 		geom.vertices.push( start, end );
-		var mat = new THREE.LineBasicMaterial( { color: _colors["go_normal"], linewidth: 2 } );
-		goroutine.line = new THREE.Line(geom, mat);
+		goroutine.line = new THREE.Line(geom, _mats["go_normal"]);
 
 		// create link with parent line
 		if (parent != undefined) {
@@ -221,8 +234,7 @@ GoThree.Trace = function() {
 				var lend = new THREE.Vector3( x, y, z );
 				var lgeom = new THREE.Geometry();
 				lgeom.vertices.push( lstart, lend );
-				var mat = new THREE.LineBasicMaterial( { color: _colors["go_link"], linewidth: 0.5, } );
-				lline = new THREE.Line( lgeom, mat );
+				lline = new THREE.Line( lgeom, _mats["go_link"] );
 				_scene.add( lline );
 			}
 		}
@@ -230,8 +242,7 @@ GoThree.Trace = function() {
 		// create cap text
 		var shapes = THREE.FontUtils.generateShapes(this._goroutine_name(name), { font: "helvetiker", weight: "normal", size: 3*_scale } );
 		var geom = new THREE.ShapeGeometry( shapes );
-		var mat = new THREE.MeshBasicMaterial({color: _colors["go_cap"]});
-		var text = new THREE.Mesh( geom, mat );
+		var text = new THREE.Mesh( geom, _mats["go_cap"] );
 		text.position.x = x;
 		text.position.y = y;
 		text.position.z = z;
@@ -260,37 +271,36 @@ GoThree.Trace = function() {
 		var start = s.line.geometry.vertices[1];
 		var end = e.line.geometry.vertices[1];
 
+		var duration = 50; // default: 0.05s
+		if (dur !== undefined) {
+			duration = dur / (1000 * 1000); // -> nanoseconds -> milliseconds
+		}
+
 		// target end is on the same Y axis as the start
-		var target = { x: end.x, y: start.y, z: end.z };
-		var targetV = new THREE.Vector3(end.x, start.y, end.z);
+		var target = { x: end.x, y: end.y, z: end.z };
+		var targetV = new THREE.Vector3(end.x, end.y, end.z);
 
 		// First, create line that will be animated
 		// (as ArrowHelper can't be animated)
-		var head = { x: start.x, y: start.y, z: start.z };
-		var tail = { x: start.x, y: start.y, z: start.z };
+		var head = { x: start.x, y: end.y, z: start.z };
+		var tail = { x: start.x, y: end.y, z: start.z };
 		var geom = new THREE.Geometry();
 		geom.vertices.push(head);
 		geom.vertices.push(tail);
-		var line = new THREE.Line(geom, new THREE.LineBasicMaterial({
-			color: _colors["send_arrow"],
-		}));
+		var line = new THREE.Line(geom, _mats["send_arrow"]);
 		_scene.add(line); 
 
 		// create tween for line animation
-		var duration = 500; // default: 0.5s
-		if (dur !== undefined) {
-			duration = dur / (1000 * 1000); // nanoseconds -> milliseconds
-		}
-		console.log("Duration: " + duration + " ms")
-		var tween = new TWEEN.Tween(tail).to(target, duration+_distance*(_speed-1));
+		var d = duration/1000000*_tick_per_sec;
+		var d2 = Math.sqrt(d*d + _distance*_distance);
+		var tween = new TWEEN.Tween(tail).to(target, d2 * _speed * 2);
 		tween.easing(TWEEN.Easing.Cubic.InOut);
 
 		// create text with value
 		var trace = {};
 		var shapes = THREE.FontUtils.generateShapes(value, { font: "helvetiker", weight: "normal", size: 1.5*_scale } );
 		var geom = new THREE.ShapeGeometry( shapes );
-		var mat = new THREE.MeshBasicMaterial({color: _colors["send_value"]});
-		trace.text = new THREE.Mesh( geom, mat );
+		trace.text = new THREE.Mesh( geom, _mats["send_value"] );
 		// get center of the line
 		var c = new THREE.Vector3().addVectors( start, targetV ).multiplyScalar( 0.5 );
 		trace.text.position.x = c.x;
@@ -377,7 +387,6 @@ GoThree.Trace = function() {
 		var position = {x:0, y:y, z:0};
 		if (parent != undefined) {
 			var p = _goroutines.find({name: parent});
-			console.log(parent, p);
 			if (p === undefined) 
 				return p;
 			var parentStart = p.line.geometry.vertices[0];
@@ -426,15 +435,17 @@ GoThree.Trace = function() {
 		if (g === undefined) return;
 		if (g.parent !== undefined) {
 			var parent = _goroutines.find({name: g.parent});
-			if (parent === undefined) return;
+			if (parent === undefined) {
+				_goroutines.remove({name: name});
+				return;
+			}
 			var ggeom = g.line.geometry.vertices[1];
 			var pgeom = parent.line.geometry.vertices[1];
 			var start = new THREE.Vector3(ggeom.x, ggeom.y, ggeom.z);
 			var end = new THREE.Vector3(pgeom.x, ggeom.y, pgeom.z);
 			var geom = new THREE.Geometry();
 			geom.vertices.push( start, end );
-			var mat = new THREE.LineBasicMaterial( { color: _colors["go_link"], linewidth: 1, } );
-			line = new THREE.Line( geom, mat );
+			line = new THREE.Line( geom, _mats["go_link"] );
 			_scene.add( line );
 			_goroutines.remove({name: name});
 		}
@@ -448,8 +459,7 @@ GoThree.Trace = function() {
 		}
 		var pos = g.line.geometry.vertices[1];
 		var geom = new THREE.SphereGeometry( 1.2, 1, 1 );
-		var mat = new THREE.MeshBasicMaterial( {color: _colors["channel"]} );
-		var sphere = new THREE.Mesh( geom, mat );
+		var sphere = new THREE.Mesh( geom, _mats["channel"] );
 		sphere.position.x = pos.x;
 		sphere.position.y = pos.y;
 		sphere.position.z = pos.z;
@@ -457,18 +467,18 @@ GoThree.Trace = function() {
 	};
 
 	this._cmd_block_goroutine = function(name) {
-		this._change_g_color(name, _colors["go_blocked"], 2);
+		this._change_g_color(name, _mats["go_blocked"]);
 	};
 
 	this._cmd_unblock_goroutine = function(name) {
-		this._change_g_color(name, _colors["go_normal"], 5);
+		this._change_g_color(name, _mats["go_normal"]);
 	};
 
 	this._cmd_sleep_goroutine = function(name) {
-		this._change_g_color(name, _colors["go_sleep"], 2);
+		this._change_g_color(name, _mats["go_sleep"]);
 	};
 
-	this._change_g_color = function(name, color, width) {
+	this._change_g_color = function(name, mat) {
 		var g = _goroutines.find({name: name});
 		if (g === undefined) return;
 
@@ -479,8 +489,40 @@ GoThree.Trace = function() {
 		var start = new THREE.Vector3( oe.x, oe.y, oe.z );
 		var end = new THREE.Vector3( oe.x, oe.y, oe.z );
 		geom.vertices.push(start, end);
-		var mat = new THREE.LineBasicMaterial( { color: color, linewidth: width } );
 		g.line = new THREE.Line(geom, mat);
 		_scene.add( g.line );
+	};
+
+	// increase line width 
+	this.incWidth = function() {
+		_mats["go_blocked"].linewidth++;
+		_mats["go_sleep"].linewidth++;
+		_mats["go_normal"].linewidth++;
+		_mats["go_link"].linewidth++;
+		_mats["send_arrow"].linewidth++;
+	};
+	// increase line width 
+	this.decWidth = function() {
+		_mats["go_blocked"].linewidth--;
+		_mats["go_sleep"].linewidth--;
+		_mats["go_normal"].linewidth--;
+		_mats["go_link"].linewidth--;
+		_mats["send_arrow"].linewidth--;
+	};
+
+	_widths = {
+		"default": [2, 2, 2, 2, 2],
+		"mode1": [10, 1, 1, 1, 1],
+		"mode2": [1, 10, 1, 1, 1],
+		"mode3": [1, 1, 10, 1, 1],
+		"mode4": [1, 1, 1, 1, 10],
+	};
+
+	this.highlight = function(mode) {
+		_mats["go_blocked"].linewidth = _widths[mode][0];
+		_mats["go_sleep"].linewidth =  _widths[mode][1];
+		_mats["go_normal"].linewidth =  _widths[mode][2];
+		_mats["go_link"].linewidth =  _widths[mode][3];
+		_mats["send_arrow"].linewidth =  _widths[mode][4];
 	};
 };

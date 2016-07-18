@@ -1,19 +1,9 @@
 var scene, camera, renderer, controls, orbit, trace, cameraControls;
 
-// leap motion helpers
-var baseBoneRotation = ( new THREE.Quaternion ).setFromEuler( new THREE.Euler( 0, 0, Math.PI / 2 ) );
-var armMeshes = [];
-var boneMeshes = [];
-
 init();
 Leap.loop(function(frame){
-  // maybe some modifications to your scene
-  // ...
-
   cameraControls.update(frame); // rotating, zooming & panning
   trace.onControlsChanged(camera);
-  trace.animate();
-  renderer.render(scene, camera);
 });
 
 animate();
@@ -45,20 +35,6 @@ function init() {
 	mat1 = new THREE.LineBasicMaterial( { color: 0x0000ff, linewidth: 4, } );
 	trace = new GoThree.Trace();
 	trace.init(scene, data, params, scale);
-	/*
-	trace.init(scene, data, {
-		allCaps: true,
-		zoom: 0.6,
-		speed: 1.5,
-		angle: 45,
-		angle2: 90,
-		autoAngle: false,
-		totalTime: 100,
-		distance: 100,
-		autoGrow: false,
-		distance2: 20
-	});
-	*/
 
 	// RENDERER
 	renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, });
@@ -114,11 +90,9 @@ function init() {
 }
 
 function animate() {
-
 	if (orbit.autoRotate) {
 		orbit.update();
 	};
-	//controls.update();
 	trace.animate();
 
 	requestAnimationFrame(animate);
@@ -128,6 +102,7 @@ function animate() {
 }
 
 function keydown(event) {
+	console.log(event.which);
 	switch (event.which) {
 		case 80: // 'P' - (Un)Pause autoRotate
 			toggleAutoRotate();
@@ -141,47 +116,30 @@ function keydown(event) {
 		case 70: // 'F' - Faster
 			trace.speedup();
 			break;
+		case 187: // '+' - IncWidth
+			trace.incWidth();
+			break;
+		case 189: // '-' - DecWidth
+			trace.decWidth();
+			break;
+		case 48: // '0' - HighlighMode Default
+			trace.highlight("default");
+			break;
+		case 49: // '1' - HighlighMode 1
+			trace.highlight("mode1");
+			break;
+		case 50: // '2' - HighlighMode 2
+			trace.highlight("mode2");
+			break;
+		case 51: // '2' - HighlighMode 3
+			trace.highlight("mode3");
+			break;
+		case 52: // '2' - HighlighMode 4
+			trace.highlight("mode4");
+			break;
 	}
 }
 
 function toggleAutoRotate() {
 	orbit.autoRotate = !orbit.autoRotate;
-}
-
-function leapAnimate( frame ) {
-	var countBones = 0;
-	var countArms = 0;
-	armMeshes.forEach( function( item ) { scene.remove( item ) } );
-	boneMeshes.forEach( function( item ) { scene.remove( item ) } );
-	for ( var hand of frame.hands ) {
-		for ( var finger of hand.fingers ) {
-			for ( var bone of finger.bones ) {
-				if ( countBones++ === 0 ) { continue; }
-				var boneMesh = boneMeshes [ countBones ] || addMesh( boneMeshes );
-				updateMesh( bone, boneMesh );
-			}
-		}
-		var arm = hand.arm;
-		var armMesh = armMeshes [ countArms++ ] || addMesh( armMeshes );
-		updateMesh( arm, armMesh );
-		armMesh.scale.set( arm.width / 4, arm.width / 2, arm.length );
-	}
-
-	animate();
-}
-
-function addMesh( meshes ) {
-	var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-	var material = new THREE.MeshNormalMaterial();
-	var mesh = new THREE.Mesh( geometry, material );
-	meshes.push( mesh );
-	return mesh;
-}
-
-function updateMesh( bone, mesh ) {
-	mesh.position.fromArray( bone.center() );
-	mesh.setRotationFromMatrix( ( new THREE.Matrix4 ).fromArray( bone.matrix() ) );
-	mesh.quaternion.multiply( baseBoneRotation );
-	mesh.scale.set( bone.width, bone.width, bone.length );
-	scene.add( mesh );
 }
