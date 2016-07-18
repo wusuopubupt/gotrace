@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"runtime/trace"
 	"time"
 )
 
@@ -22,6 +24,7 @@ func Filter(ch <-chan int, out chan<- int, prime int) {
 }
 
 func main() {
+	trace.Start(os.Stderr)
 	ch := make(chan int)
 	go Generate(ch)
 	for i := 0; i < 10; i++ {
@@ -31,4 +34,5 @@ func main() {
 		go Filter(ch, out, prime)
 		ch = out
 	}
+	trace.Stop()
 }

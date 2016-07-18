@@ -2,10 +2,13 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"runtime/trace"
 	"time"
 )
 
 func main() {
+	trace.Start(os.Stderr)
 	ch := make(chan int)
 
 	go func(ch chan int) {
@@ -19,4 +22,5 @@ func main() {
 		fmt.Println(v)
 		time.Sleep(10 * time.Millisecond)
 	}
+	trace.Stop()
 }

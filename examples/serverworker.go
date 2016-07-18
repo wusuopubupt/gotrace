@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"net"
+	"os"
+	"runtime/trace"
 	"time"
 )
 
@@ -51,6 +54,10 @@ func server(l net.Listener, ch chan int) {
 }
 
 func main() {
+	trace.Start(os.Stderr)
+
+	fmt.Println("Listening on :5000. Send something using nc: echo hello | nc localhost 5000")
+	fmt.Println("Exiting in 2 seconds...")
 	l, err := net.Listen("tcp", ":5000")
 	if err != nil {
 		panic(err)
@@ -59,4 +66,5 @@ func main() {
 	go pool(ch, 36)
 	go server(l, ch)
 	time.Sleep(2 * time.Second)
+	trace.Stop()
 }

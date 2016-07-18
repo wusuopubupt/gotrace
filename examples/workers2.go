@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"runtime/trace"
 	"sync"
 	"time"
 )
@@ -50,6 +52,7 @@ func worker(tasks <-chan int, wg *sync.WaitGroup) {
 }
 
 func main() {
+	trace.Start(os.Stderr)
 	var wg sync.WaitGroup
 	wg.Add(WORKERS)
 	tasks := make(chan int)
@@ -65,4 +68,5 @@ func main() {
 
 	close(tasks)
 	wg.Wait()
+	trace.Stop()
 }

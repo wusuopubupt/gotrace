@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net"
 	"os"
 	"runtime/trace"
@@ -14,6 +15,8 @@ func handler(c net.Conn) {
 
 func main() {
 	trace.Start(os.Stderr)
+	fmt.Println("Listening on :5000. Send something using nc: echo hello | nc localhost 5000")
+	fmt.Println("Exiting in 1 second...")
 
 	go time.AfterFunc(1*time.Second, func() { trace.Stop(); os.Exit(0) })
 

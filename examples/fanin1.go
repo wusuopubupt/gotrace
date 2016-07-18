@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"runtime/trace"
 	"time"
 )
 
@@ -20,6 +22,7 @@ func reader(out chan int) {
 }
 
 func main() {
+	trace.Start(os.Stderr)
 	ch := make(chan int)
 	out := make(chan int)
 	go producer(ch, 10*time.Millisecond)
@@ -29,4 +32,5 @@ func main() {
 		i := <-ch
 		out <- i
 	}
+	trace.Stop()
 }

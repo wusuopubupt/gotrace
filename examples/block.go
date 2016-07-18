@@ -1,9 +1,15 @@
 package main
 
-import "math"
-import "time"
+import (
+	"math"
+	"os"
+	"runtime/trace"
+	"time"
+)
 
+// This example shows blocked state and some CPU usage visualization
 func main() {
+	trace.Start(os.Stderr)
 	time.Sleep(10 * time.Millisecond)
 	ch := make(chan int)
 	go func() {
@@ -18,4 +24,5 @@ func main() {
 	}()
 	<-ch
 	time.Sleep(100 * time.Millisecond)
+	trace.Stop()
 }

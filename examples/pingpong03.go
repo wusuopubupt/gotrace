@@ -1,8 +1,13 @@
 package main
 
-import "time"
+import (
+	"os"
+	"runtime/trace"
+	"time"
+)
 
 func main() {
+	trace.Start(os.Stderr)
 	var Ball int
 	table := make(chan int)
 
@@ -16,6 +21,7 @@ func main() {
 	table <- Ball
 	time.Sleep(1 * time.Second)
 	<-table
+	trace.Stop()
 }
 
 func player(table chan int) {

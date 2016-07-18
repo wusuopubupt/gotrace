@@ -33,6 +33,8 @@ func server(l net.Listener, ch chan int) {
 func main() {
 	trace.Start(os.Stderr)
 
+	fmt.Println("Listening on :5000. Send something using nc: echo hello | nc localhost 5000")
+	fmt.Println("Exiting in 1 second...")
 	l, err := net.Listen("tcp", ":5000")
 	if err != nil {
 		panic(err)
