@@ -88,7 +88,7 @@ func (c *Commands) StopGoroutine(ts int64, name string, gid uint64) {
 
 func (c *Commands) ChanSend(send_ts, recv_ts int64, cid, fgid, tgid, val uint64) {
 	cmd := &Command{
-		Time:     send_ts,
+		Time:     recv_ts,
 		Command:  CmdSend,
 		From:     fmt.Sprintf("#%d", fgid),
 		To:       fmt.Sprintf("#%d", tgid),

@@ -277,12 +277,12 @@ GoThree.Trace = function() {
 		}
 
 		// target end is on the same Y axis as the start
-		var target = { x: end.x, y: start.y-duration, z: end.z };
-		var targetV = new THREE.Vector3(end.x, end.y-duration, end.z);
+		var target = { x: end.x, y: end.y, z: end.z };
+		var targetV = new THREE.Vector3(end.x, end.y, end.z);
 
 		// First, create line that will be animated
 		// (as ArrowHelper can't be animated)
-		var head = { x: start.x, y: start.y, z: start.z };
+		var head = { x: start.x, y: end.y, z: start.z };
 		var tail = { x: start.x, y: end.y, z: start.z };
 		var geom = new THREE.Geometry();
 		geom.vertices.push(head);

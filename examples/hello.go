@@ -1,8 +1,13 @@
 package main
 
-import "time"
+import (
+	"os"
+	"runtime/trace"
+	"time"
+)
 
 func main() {
+	trace.Start(os.Stderr)
 	// create new channel of type int
 	ch := make(chan int)
 
@@ -15,4 +20,5 @@ func main() {
 	}()
 	// read from channel
 	<-ch
+	trace.Stop()
 }
