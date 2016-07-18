@@ -112,12 +112,31 @@ Now, it's time to run `gotrace` and feed the binary and the trace to produce the
     
 It should start the browser and render visualization.
 
-# Hotkeys
+# Visualization
+
+## Colors
+Different colors of goroutines represent different states.
+
+ - red - blocked state
+ - green - unblocked
+ - yellow - unblocked and using CPU
+
+Colors of goroutines' connections and sendings over the channels are the same.
+
+## Hotkeys
 
 You can use mouse/trackpad to zoom/rotate/pan visualization. On MacOS X you use single tap and move to rotate, double-finger touch to zoom, and double-finger tap and move to pan.
 
 You may also try it with[ Leap Motion controller](https://www.leapmotion.com) for zooming and rotating with hands - switch to **leap** branch.
 
+Also there are some useful hotkeys:
+
+ - **r** - **r**estart
+ - **p** - **p**ause
+ - **1, 2, 3, 4, 0** - highlight modes (0 - default)
+ - **+/-** - increase/decrease width of lines
+ - **s/f** - **s**lower/**f**aster animation
+ 
 ---
 
 # Appendix A - patching Go locally
@@ -153,6 +172,7 @@ or (assuming your PATH set to use /usr/local/go)
 NOTE: return your previous installation by `sudo ln -nsf /usr/local/go-orig /usr/local/go`
 
 Now, you should be able to run `gotrace main.go` and get the result.
-        
 
+# License     
+MIT License
 
