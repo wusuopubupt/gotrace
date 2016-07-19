@@ -30,10 +30,10 @@ Or, using local patched Go installation ([jump to detailed instructions](#append
 
     gotrace examples/hello.go
 
-
-Now, please learn some important things before trying your own code. Feel free to play first with code in **examples**/ folder.  
  
 ### Prepare your program
+
+Now, **please learn some important things before trying your own code**. Feel free to play first with code in **examples**/ folder.  
 
 Theoretically, gotrace should do all the magic itself and be able to handle any Go program. That's the goal, but at the present moment, if you want to get good/meaningful visualization, you should follow some rules and suggestions.
 
