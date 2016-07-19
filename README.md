@@ -10,16 +10,16 @@ Slides from GopherCon'16: [http://divan.github.io/talks/2016/gophercon/](http://
 
 ## Intro
 
-This tool generates 3D visualization of Go concurrency flow by analyzing it's [execution trace.](https://docs.google.com/document/u/1/d/1FP5apqzBgr7ahCCgFO-yoVhk4YZrNIDNf9RybngBc14/pub) To view the visualization you need modern browser with WebGL support (pretty much any browser nowadays).
+This tool generates 3D visualization of Go concurrency flow by analyzing its [execution trace.](https://docs.google.com/document/u/1/d/1FP5apqzBgr7ahCCgFO-yoVhk4YZrNIDNf9RybngBc14/pub) To view the visualization you need a modern browser with WebGL support (pretty much any browser nowadays).
 
-Its primary goal is to be an educational tool for Go concurrency. It works well with small programs that produce short traces (see Scale issues below). 
+Its primary goal is to be an educational tool for Go concurrency. It works well with small programs that produce short traces (see Scale issues below).
 
 ## Usage
 First, install gotrace:
 
     go get -u github.com/divan/gotrace
-    
-Second, use patched Go runtime to produce trace and binary. There are two ways to do it - use [docker container](#using-docker) or [apply patch locally](#appendix-a---patching-go-locally).
+
+Second, use patched Go runtime to produce trace and binary. There are two ways to do it - use [a docker container](#using-docker) or [apply the patch locally](#appendix-a---patching-go-locally).
 
 Quick example using pre-made docker image ([jump to detailed instructions](#using-docker)):
 
@@ -29,15 +29,15 @@ Quick example using pre-made docker image ([jump to detailed instructions](#usin
     		go build -o /src/binary /src/examples/hello.go
     ./binary 2> trace.out
     gotrace ./trace.out ./binary
-    
+
 Or, using local patched Go installation ([jump to detailed instructions](#appendix-a---patching-go-locally)):
 
     gotrace examples/hello.go
 
- 
+
 ### Prepare your program
 
-Now, **please learn some important things before trying your own code**. Feel free to play first with code in **examples**/ folder.  
+Now, **please learn some important things before trying your own code**. Feel free to play first with code in **examples**/ folder.
 
 Theoretically, gotrace should do all the magic itself and be able to handle any Go program. That's the goal, but at the present moment, if you want to get good/meaningful visualization, you should follow some rules and suggestions.
 
@@ -67,7 +67,7 @@ func main() {
 Currently it's important to write trace into os.Stderr. See issue #X if your example uses stderr for other needs.
 
 #### Consider inserting very short time.Sleep() calls
-If you trying to visualize some things that happen at nanosecond/microsecond level, it could be wise to insert `time.Sleep(1 * time.Millisecond` calls to get more clear visualization.
+If you are trying to visualize some things that happen at nanosecond/microsecond level, it could be wise to insert `time.Sleep(1 * time.Millisecond)` calls to get more clear visualization.
 
 For example, if your code runs 100 goroutines in a loop, their IDs and their start order probably would be different, resulting in slightly messed picture. So, changing:
 
@@ -88,32 +88,32 @@ to
 will help to make better visualization.
 
 #### Try to keep number of goroutines/events small
-The less objects will be rendered, the better. If you have many things to render, WebGL will just hang your browser. Also, keep in mind, that point of visualization is to express something. So running 1024 workers will result in a heavy visualization where you will not see separate goroutines. Setting this value to, say, 36 will produce much more clear picture.
+The fewer objects that will be rendered, the better. If you have many things to render, WebGL will just hang your browser. Also, keep in mind, that point of visualization is to express something. So running 1024 workers will result in a heavy visualization where you will not see separate goroutines. Setting this value to, say, 36 will produce much more clear picture.
 
 ### Detailed instructions
-Next step is to build your program. The problem here is that you need patched Go runtime. So if you patched it yourself (see [Appendix A](#appendix-a---patching-go-locally)), you just have to run `go build`, or, even simpler, let `gotrace` do it for you. But most people, probably wouldn't want to do this and prefer using Docker for it.
+The next step is to build your program. You will need to build using the patched Go runtime. So if you patched it yourself (see [Appendix A](#appendix-a---patching-go-locally)), you just have to run `go build`, or, even simpler, let `gotrace` do it for you. But most people, probably wouldn't want to do this and prefer using Docker for it.
 
 #### Using Docker
 
-You will need [Docker](https://docs.docker.com/engine/userguide/)  installed and running.
+You will need [Docker](https://docs.docker.com/engine/userguide/) installed and running.
 
-Then pull image from Docker Hub:
+Then pull the image from Docker Hub:
 
 	docker pull divan/golang:gotrace
 
 or build it yourself:
 
     docker build -t "divan/golang:gotrace" -f runtime/Dockerfile runtime/
-    
-If everything went ok, you should have `divan/golang:gotrace` image in you docker (check with `docker images` command).
- 
+
+If everything went ok, you should have `divan/golang:gotrace` image in your local docker (check with `docker images` command).
+
 Now, use this command to produce the binary:
 ##### MacOS X
     docker run --rm -it \
     	-e GOOS=darwin \
     	-v $(pwd):/src divan/golang:gotrace \
     		go build -o /src/binary /src/examples/hello.go
-    		
+
 ##### Linux
 
     docker run --rm -it \
@@ -124,18 +124,18 @@ Now, use this command to produce the binary:
     docker run --rm -it \
     	-e GOOS=windows \
     	-v $(pwd):/src divan/golang:gotrace \
-    		go build -o /src/binary.exe /src/examples/hello.go    		
+    		go build -o /src/binary.exe /src/examples/hello.go
 
 ### 3. Run it and save the trace.
 Once you have the binary, you can run it and save the trace:
 
     ./binary 2> trace.out
-    
+
 ### 4. Run `gotrace` (finally)
 Now, it's time to run `gotrace` and feed the binary and the trace to produce the visualization:
 
     gotrace ./trace.out ./binary
-    
+
 It should start the browser and render visualization.
 
 # Visualization
@@ -151,9 +151,9 @@ Colors of goroutines' connections and sendings over the channels are the same.
 
 ## Hotkeys
 
-You can use mouse/trackpad to zoom/rotate/pan visualization. On MacOS X you use single tap and move to rotate, double-finger touch to zoom, and double-finger tap and move to pan.
+You can use the mouse/trackpad to zoom/rotate/pan visualization. On MacOS X you use single tap and move to rotate, double-finger touch to zoom, and double-finger tap and move to pan.
 
-You may also try it with[ Leap Motion controller](https://www.leapmotion.com) for zooming and rotating with hands - switch to **leap** branch.
+You may also try it with a [Leap Motion controller](https://www.leapmotion.com) for zooming and rotating with hands - switch to **leap** branch.
 
 Also there are some useful hotkeys:
 
@@ -162,8 +162,8 @@ Also there are some useful hotkeys:
  - **1, 2, 3, 4, 0** - highlight modes (0 - default)
  - **+/-** - increase/decrease width of lines
  - **s/f** - **s**lower/**f**aster animation
- 
- 
+
+
 ## Limits/Known issues
 
  - Value of variable being sent to the channel is supported only for integer types. (see [Issue #3](https://github.com/divan/gotrace/issues/3))
@@ -183,7 +183,7 @@ Here are instructions on how to do it (MacOS X and Linux).
 2. Then, copy patch and apply it:
 
         sudo patch -p1 -d /usr/local/go162/go < runtime/go1.6.2-tracenew.patch
-        
+
 3. Build new runtime:
 
         sudo -i
@@ -198,11 +198,10 @@ or (assuming your PATH set to use /usr/local/go)
 
 		sudo mv /usr/local/go /usr/local/go-orig
 		sudo ln -nsf /usr/local/go162/go /usr/local/go
-		
+
 NOTE: return your previous installation by `sudo ln -nsf /usr/local/go-orig /usr/local/go`
 
 Now, you should be able to run `gotrace main.go` and get the result.
 
-# License     
+# License
 MIT License
-
