@@ -2,6 +2,10 @@
 
 GoTrace is a 3D WebGL visualizer of Go concurrency. It analyzes trace produced by `go tool trace` and renders visuzlization of concurrency flow.
 
+Original article: [https://divan.github.io/posts/go_concurrency_visualize/](https://divan.github.io/posts/go_concurrency_visualize/)
+
+Slides from GopherCon'16: [http://divan.github.io/talks/2016/gophercon/](http://divan.github.io/talks/2016/gophercon/)
+
 ![](images/demo.png)
 
 ## Intro
