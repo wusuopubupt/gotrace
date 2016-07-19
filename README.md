@@ -159,7 +159,11 @@ Also there are some useful hotkeys:
  - **+/-** - increase/decrease width of lines
  - **s/f** - **s**lower/**f**aster animation
  
----
+ 
+## Limits/Known issues
+
+ - Value of variable being sent to the channel is supported only for integer types. (see [Issue #3](https://github.com/divan/gotrace/issues/3))
+ - Buffered channels doesn't work (yet) (see [Issue #2](https://github.com/divan/gotrace/issues/2))
 
 # Appendix A - patching Go locally
 If you really want to play around with gotrace, you may want to patch Go runtime yourself. It will allow you to run gotrace as easy as `gotrace main.go` without all intermediate steps described above.
