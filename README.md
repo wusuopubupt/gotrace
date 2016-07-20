@@ -174,30 +174,30 @@ If you really want to play around with gotrace, you may want to patch Go runtime
 
 Here are instructions on how to do it (MacOS X and Linux).
 
-1. Assuming your Go installation is in `/usr/local/go` (default), download Go 1.6.2 and unpack it into `/usr/local/go162`.
+1. Assuming your Go installation is in `/usr/local/go` (default), download Go 1.6.3 and unpack it into `/usr/local/go163`.
 
         sudo -i
-        mkdir -p /usr/local/go162
-        curl https://storage.googleapis.com/golang/go1.6.2.src.tar.gz | tar -xz -C /usr/local/go162
+        mkdir -p /usr/local/go163
+        curl https://storage.googleapis.com/golang/go1.6.3.src.tar.gz | tar -xz -C /usr/local/go163
 
 2. Then, copy patch and apply it:
 
-        sudo patch -p1 -d /usr/local/go162/go < runtime/go1.6.2-tracenew.patch
+        sudo patch -p1 -d /usr/local/go163/go < runtime/go1.6.3-tracenew.patch
 
 3. Build new runtime:
 
         sudo -i
-        cd /usr/local/go162/go/src
+        cd /usr/local/go163/go/src
         export GOROOT_BOOTSTRAP=/usr/local/go # or choose yours
         ./make.bash
 
 4. Finally, export PATH or use `ln -s` command to make this Go version actual in your system:
 
-		export PATH=/usr/local/go162/go/bin:$PATH
+		export PATH=/usr/local/go163/go/bin:$PATH
 or (assuming your PATH set to use /usr/local/go)
 
 		sudo mv /usr/local/go /usr/local/go-orig
-		sudo ln -nsf /usr/local/go162/go /usr/local/go
+		sudo ln -nsf /usr/local/go163/go /usr/local/go
 
 NOTE: return your previous installation by `sudo ln -nsf /usr/local/go-orig /usr/local/go`
 
@@ -205,3 +205,4 @@ Now, you should be able to run `gotrace main.go` and get the result.
 
 # License
 MIT License
+
