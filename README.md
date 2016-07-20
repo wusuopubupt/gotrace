@@ -205,4 +205,3 @@ Now, you should be able to run `gotrace main.go` and get the result.
 
 # License
 MIT License
-
