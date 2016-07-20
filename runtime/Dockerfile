@@ -34,7 +34,7 @@ RUN curl -fsSL "$GOLANG_DOWNLOAD_URL" -o golang.tar.gz \
 	&& tar -C /usr/local -xzf golang.tar.gz \
 	&& rm golang.tar.gz \
 	&& cd /usr/local/go/src \
-	&& patch -p2 < /runtime/go1.6.2-tracenew.patch \
+	&& patch -p2 < /runtime/go"$GOLANG_TO_BUILD_VERSION"-tracenew.patch \
 	&& ./make.bash \
 	&& rm -rf /usr/local/gotemp/
 
