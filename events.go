@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"github.com/divan/gotrace/trace"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 )
 
 // EventSource defines anything that can
@@ -23,18 +23,12 @@ type EventSource interface {
 type TraceSource struct {
 	// Trace is the path to the trace file.
 	Trace string
-
-	// Binary is a path to binary, needed to symbolize stacks.
-	// In the future it may be dropped, see
-	// https://groups.google.com/d/topic/golang-dev/PGX1H8IbhFU
-	Binary string
 }
 
 // NewTraceSource inits new TraceSource.
-func NewTraceSource(trace, binary string) *TraceSource {
+func NewTraceSource(trace string) *TraceSource {
 	return &TraceSource{
-		Trace:  trace,
-		Binary: binary,
+		Trace: trace,
 	}
 }
 
@@ -47,11 +41,13 @@ func (t *TraceSource) Events() ([]*trace.Event, error) {
 	}
 	defer f.Close()
 
-	return parseTrace(f, t.Binary)
+	return parseTrace(f)
 }
 
-func parseTrace(r io.Reader, binary string) ([]*trace.Event, error) {
-	return trace.Parse(r, binary)
+func parseTrace(r io.Reader) ([]*trace.Event, error) {
+	// pass empty string for binary, as it's relevant only for
+	// traces generated before Go 1.7
+	return trace.Parse(r, "")
 }
 
 // NativeRun implements EventSource for running app locally,
@@ -83,33 +79,13 @@ func (r *NativeRun) Events() ([]*trace.Event, error) {
 		}
 	}(r.Path)
 
-	tmpBinary, err := ioutil.TempFile("", "gotracer_build")
-	if err != nil {
-		return nil, err
-	}
-	defer os.Remove(tmpBinary.Name())
-
-	// build binary
-	// TODO: replace build&run part with "go run" when there is no more need
-	// to keep binary
-	fmt.Println("Building instrumented binary...")
-	cmd := exec.Command("go", "build", "-o", tmpBinary.Name())
+	// run binary using 'go run'
+	fmt.Println("Running instrumented binary...")
+	fullPath := filepath.Join(r.Path, filepath.Base(r.OrigPath))
+	cmd := exec.Command("go", "run", fullPath)
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	cmd.Dir = r.Path
-	err = cmd.Run()
-	if err != nil {
-		fmt.Println("go build error", stderr.String())
-		// TODO: test on most common errors, possibly add stderr to
-		// error information or smth.
-		return nil, err
-	}
-
-	// run
-	fmt.Println("Executing instrumented binary...")
-	stderr.Reset()
-	cmd = exec.Command(tmpBinary.Name())
-	cmd.Stderr = &stderr
 	if err = cmd.Run(); err != nil {
 		fmt.Println("modified program failed:", err, stderr.String())
 		// TODO: test on most common errors, possibly add stderr to
@@ -123,7 +99,7 @@ func (r *NativeRun) Events() ([]*trace.Event, error) {
 
 	// parse trace
 	fmt.Println("Parsing trace...")
-	return parseTrace(&stderr, tmpBinary.Name())
+	return parseTrace(&stderr)
 }
 
 // RewriteSource attempts to add trace-related code if needed.
