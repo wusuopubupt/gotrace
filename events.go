@@ -51,14 +51,7 @@ func (t *TraceSource) Events() ([]*trace.Event, error) {
 }
 
 func parseTrace(r io.Reader, binary string) ([]*trace.Event, error) {
-	events, err := trace.Parse(r)
-	if err != nil {
-		return nil, err
-	}
-
-	err = trace.Symbolize(events, binary)
-
-	return events, err
+	return trace.Parse(r, binary)
 }
 
 // NativeRun implements EventSource for running app locally,
@@ -79,6 +72,7 @@ func NewNativeRun(path string) *NativeRun {
 // installation and returns parsed events.
 func (r *NativeRun) Events() ([]*trace.Event, error) {
 	// rewrite AST
+	fmt.Println("Rewriting AST...")
 	err := r.RewriteSource()
 	if err != nil {
 		return nil, fmt.Errorf("couldn't rewrite source code: %v", err)
@@ -98,6 +92,7 @@ func (r *NativeRun) Events() ([]*trace.Event, error) {
 	// build binary
 	// TODO: replace build&run part with "go run" when there is no more need
 	// to keep binary
+	fmt.Println("Building instrumented binary...")
 	cmd := exec.Command("go", "build", "-o", tmpBinary.Name())
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
@@ -111,6 +106,7 @@ func (r *NativeRun) Events() ([]*trace.Event, error) {
 	}
 
 	// run
+	fmt.Println("Executing instrumented binary...")
 	stderr.Reset()
 	cmd = exec.Command(tmpBinary.Name())
 	cmd.Stderr = &stderr
@@ -126,6 +122,7 @@ func (r *NativeRun) Events() ([]*trace.Event, error) {
 	}
 
 	// parse trace
+	fmt.Println("Parsing trace...")
 	return parseTrace(&stderr, tmpBinary.Name())
 }
 
