@@ -4,6 +4,7 @@ import (
 	"os"
 	"runtime/trace"
 	"time"
+	"fmt"
 )
 
 func main() {
@@ -19,6 +20,9 @@ func main() {
 		time.Sleep(10 * time.Millisecond)
 	}()
 	// read from channel
-	<-ch
+	
+    ret := <-ch
+
+    fmt.Println(ret)
 	trace.Stop()
 }
