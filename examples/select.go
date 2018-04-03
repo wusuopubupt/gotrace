@@ -23,9 +23,9 @@ func main() {
 	for i := 0; i < 20; i++ {
 		select {
 		case v := <-ch:
-			fmt.Println("Recv ", v)
+			fmt.Println("Recv #0 ", v)
 		case v := <-ch1:
-			fmt.Println("Recv ", v)
+			fmt.Println("Recv #1 ", v)
 		}
 	}
 	trace.Stop()
