@@ -1,0 +1,759 @@
+[
+  {
+    "t": 19651,
+    "command": "create goroutine",
+    "name": "#1"
+  },
+  {
+    "t": 19651,
+    "command": "unblock goroutine",
+    "name": "#1"
+  },
+  {
+    "t": 53786,
+    "command": "create goroutine",
+    "name": "#6",
+    "parent": "#1",
+    "depth": 1
+  },
+  {
+    "t": 56109,
+    "command": "create goroutine",
+    "name": "#7",
+    "parent": "#1",
+    "depth": 1
+  },
+  {
+    "t": 63837,
+    "command": "block goroutine",
+    "name": "#1"
+  },
+  {
+    "t": 70782,
+    "command": "unblock goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 71351,
+    "command": "send to channel",
+    "from": "#1",
+    "to": "#7",
+    "ch": "#4",
+    "value": "0",
+    "duration": 7965
+  },
+  {
+    "t": 81568,
+    "command": "sleep goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 82564,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 85740,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 92022,
+    "command": "unblock goroutine",
+    "name": "#5"
+  },
+  {
+    "t": 138341,
+    "command": "block goroutine",
+    "name": "#5"
+  },
+  {
+    "t": 143888,
+    "command": "unblock goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 144955,
+    "command": "block goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 147136,
+    "command": "unblock goroutine",
+    "name": "#1"
+  },
+  {
+    "t": 148321,
+    "command": "sleep goroutine",
+    "name": "#1"
+  },
+  {
+    "t": 103805625,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 103808303,
+    "command": "unblock goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 103828926,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 103850119,
+    "command": "unblock goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 103910353,
+    "command": "block goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 103918152,
+    "command": "unblock goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 103918981,
+    "command": "send to channel",
+    "from": "#7",
+    "to": "#6",
+    "ch": "#4",
+    "value": "1",
+    "duration": 65923
+  },
+  {
+    "t": 103941501,
+    "command": "sleep goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 103950414,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 103952382,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 103981278,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 103985640,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 207225642,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 207228391,
+    "command": "unblock goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 207246383,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 207291660,
+    "command": "unblock goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 207314037,
+    "command": "block goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 207320129,
+    "command": "unblock goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 207320912,
+    "command": "send to channel",
+    "from": "#6",
+    "to": "#7",
+    "ch": "#4",
+    "value": "2",
+    "duration": 20908
+  },
+  {
+    "t": 207328426,
+    "command": "sleep goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 207344664,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 207348955,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 310972099,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 310974517,
+    "command": "unblock goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 310991822,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 311016830,
+    "command": "unblock goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 311036434,
+    "command": "block goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 311040298,
+    "command": "unblock goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 311040867,
+    "command": "send to channel",
+    "from": "#7",
+    "to": "#6",
+    "ch": "#4",
+    "value": "3",
+    "duration": 21785
+  },
+  {
+    "t": 311046604,
+    "command": "sleep goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 311063956,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 311067203,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 412186967,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 412189479,
+    "command": "unblock goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 412211335,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 412255498,
+    "command": "unblock goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 412292619,
+    "command": "block goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 412299186,
+    "command": "unblock goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 412301580,
+    "command": "send to channel",
+    "from": "#6",
+    "to": "#7",
+    "ch": "#4",
+    "value": "4",
+    "duration": 41863
+  },
+  {
+    "t": 412308170,
+    "command": "sleep goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 412335383,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 412344344,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 515403335,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 515406369,
+    "command": "unblock goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 515427063,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 515481324,
+    "command": "unblock goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 515498368,
+    "command": "block goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 515505977,
+    "command": "unblock goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 515506783,
+    "command": "send to channel",
+    "from": "#7",
+    "to": "#6",
+    "ch": "#4",
+    "value": "5",
+    "duration": 22377
+  },
+  {
+    "t": 515510102,
+    "command": "block goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 515543858,
+    "command": "unblock goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 515549902,
+    "command": "sleep goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 515559218,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 515571332,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 616920464,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 616923142,
+    "command": "unblock goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 616941561,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 616988734,
+    "command": "unblock goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 617009807,
+    "command": "block goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 617015971,
+    "command": "unblock goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 617016587,
+    "command": "send to channel",
+    "from": "#6",
+    "to": "#7",
+    "ch": "#4",
+    "value": "6",
+    "duration": 25175
+  },
+  {
+    "t": 617026519,
+    "command": "sleep goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 617042947,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 617047688,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 717215154,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 717218140,
+    "command": "unblock goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 717238456,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 717278778,
+    "command": "unblock goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 717301321,
+    "command": "block goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 717305351,
+    "command": "unblock goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 717306109,
+    "command": "send to channel",
+    "from": "#7",
+    "to": "#6",
+    "ch": "#4",
+    "value": "7",
+    "duration": 19011
+  },
+  {
+    "t": 717315117,
+    "command": "sleep goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 717320332,
+    "command": "unblock goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 717321612,
+    "command": "block goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 717351362,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 717352713,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 717357952,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 717360488,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 820000756,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 820003245,
+    "command": "unblock goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 820011874,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 820030174,
+    "command": "unblock goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 820048593,
+    "command": "block goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 820056178,
+    "command": "unblock goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 820057055,
+    "command": "send to channel",
+    "from": "#6",
+    "to": "#7",
+    "ch": "#4",
+    "value": "8",
+    "duration": 24368
+  },
+  {
+    "t": 820062223,
+    "command": "sleep goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 820067628,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 820072155,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 920986444,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 920988886,
+    "command": "unblock goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 921003654,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 921017616,
+    "command": "unblock goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 921060001,
+    "command": "block goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 921064789,
+    "command": "unblock goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 921065240,
+    "command": "send to channel",
+    "from": "#7",
+    "to": "#6",
+    "ch": "#4",
+    "value": "9",
+    "duration": 44471
+  },
+  {
+    "t": 921066780,
+    "command": "block goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 921070075,
+    "command": "unblock goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 921087783,
+    "command": "sleep goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 1002800498,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 1002803106,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 1002818538,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 1002820529,
+    "command": "unblock goroutine",
+    "name": "#1"
+  },
+  {
+    "t": 1002830935,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 1002867370,
+    "command": "unblock goroutine",
+    "name": "#1"
+  },
+  {
+    "t": 1002876069,
+    "command": "block goroutine",
+    "name": "#1"
+  },
+  {
+    "t": 1024385815,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 1024388398,
+    "command": "unblock goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 1024394728,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 1024424572,
+    "command": "unblock goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 1024435666,
+    "command": "block goroutine",
+    "name": "#6"
+  },
+  {
+    "t": 1024440051,
+    "command": "unblock goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 1024440620,
+    "command": "send to channel",
+    "from": "#6",
+    "to": "#7",
+    "ch": "#4",
+    "value": "10",
+    "duration": 14009
+  },
+  {
+    "t": 1024443655,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 1024444129,
+    "command": "sleep goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 1024447329,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 1024450861,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 1128302829,
+    "command": "unblock goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 1128305721,
+    "command": "unblock goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 1128313212,
+    "command": "block goroutine",
+    "name": "#8"
+  },
+  {
+    "t": 1128329473,
+    "command": "unblock goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 1128348319,
+    "command": "block goroutine",
+    "name": "#7"
+  },
+  {
+    "t": 1128356355,
+    "command": "unblock goroutine",
+    "name": "#1"
+  },
+  {
+    "t": 1128357184,
+    "command": "send to channel",
+    "from": "#7",
+    "to": "#1",
+    "ch": "#4",
+    "value": "11",
+    "duration": 25008
+  },
+  {
+    "t": 1128401773,
+    "command": "block goroutine",
+    "name": "#1"
+  },
+  {
+    "t": 1128401783,
+    "command": "stop goroutine",
+    "name": "#1"
+  }
+]
