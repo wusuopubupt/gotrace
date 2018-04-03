@@ -9,6 +9,7 @@ import (
 )
 
 func handler(c net.Conn, ch chan int) {
+	time.Sleep(1 * time.Second)
 	ch <- len(c.RemoteAddr().String())
 	c.Write([]byte("ok"))
 	c.Close()
@@ -17,6 +18,8 @@ func handler(c net.Conn, ch chan int) {
 func logger(ch chan int) {
 	for {
 		fmt.Println(<-ch)
+		time.Sleep(1 * time.Second)
+
 	}
 }
 
@@ -42,6 +45,6 @@ func main() {
 	ch := make(chan int)
 	go logger(ch)
 	go server(l, ch)
-	time.Sleep(1 * time.Second)
+	time.Sleep(10 * time.Second)
 	trace.Stop()
 }
